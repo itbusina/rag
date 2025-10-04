@@ -1,0 +1,38 @@
+﻿using console;
+
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        DotNetEnv.Env.Load(); // loads .env file
+        
+        var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY environment variable is not set.");
+
+        var embedder = new OpenAIEmbedder("text-embedding-3-small", apiKey);
+        var dataLoader = new FileDataLoader(embedder, "sample.txt");
+        var retriver = new Retriver(embedder);
+        var augmenter = new OpenAIAugmenter("gpt-4.1-mini", apiKey);
+
+        // Step 1. Load file content
+        dataLoader.Load();
+
+        // Step 2: Chunk text
+        var chunks = await dataLoader.GetContentChunks();
+
+        // Step 4. Query
+        while (true)
+        {
+            Console.Write("Enter your question (or press Enter to exit): ");
+            var input = Console.ReadLine() ?? string.Empty;
+            var query = input.Trim();
+
+            // Step 5. Retrieve top k findings
+            var topChunks = await retriver.GetTopKChunks(chunks, query, k: 3);
+
+            // Step 6: Augment with context
+            var augmentedResponse = await augmenter.AugmentAsync(query, topChunks);
+
+            Console.WriteLine(augmentedResponse);
+        }
+    }
+}
