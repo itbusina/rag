@@ -13,6 +13,7 @@ class Program
 
         if(args.Length < 2)
         {
+            Console.WriteLine("\n\nWelcome to the Retrieval-Augmented Generation (RAG) app.");
             Console.WriteLine("Usage: dotnet run github <repository-url>");
             Console.WriteLine("Make sure to set the OPENAI_API_KEY environment variable.");
             return;
@@ -45,7 +46,7 @@ class Program
         // Step 4. Query
         while (true)
         {
-            Console.Write("Enter your question (or press Enter to exit): ");
+            Console.Write("\n\nEnter your question (or press Enter to exit): ");
             var input = Console.ReadLine() ?? string.Empty;
             var query = input.Trim();
 
