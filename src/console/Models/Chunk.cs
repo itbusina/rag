@@ -1,4 +1,4 @@
-namespace console
+namespace console.Models
 {
     public class Chunk
     {

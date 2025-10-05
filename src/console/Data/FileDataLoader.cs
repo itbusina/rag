@@ -1,4 +1,7 @@
-namespace console
+using console.Embeddings;
+using console.Models;
+
+namespace console.Data
 {
     public class FileDataLoader(IEmbedder embedder, string filePath) : IDataLoader
     {

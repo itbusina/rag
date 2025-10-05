@@ -1,4 +1,7 @@
-namespace console
+using console.Embeddings;
+using console.Models;
+
+namespace console.Retriving
 {
     public class Retriver(IEmbedder embedder)
     {

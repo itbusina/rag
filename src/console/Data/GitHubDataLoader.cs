@@ -1,6 +1,8 @@
+using console.Embeddings;
+using console.Models;
 using Octokit;
 
-namespace console
+namespace console.Data
 {
     public class GitHubDataLoader : IDataLoader
     {

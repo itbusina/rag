@@ -1,4 +1,6 @@
-namespace console
+using console.Models;
+
+namespace console.Augmentation
 {
     public interface IAugmenter
     {

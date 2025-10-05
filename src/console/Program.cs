@@ -1,4 +1,8 @@
 ﻿using console;
+using console.Augmentation;
+using console.Data;
+using console.Embeddings;
+using console.Retriving;
 using OpenAI.Chat;
 
 class Program

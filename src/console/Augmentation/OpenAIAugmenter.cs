@@ -1,7 +1,7 @@
-
+using console.Models;
 using OpenAI.Chat;
 
-namespace console
+namespace console.Augmentation
 {
     public class OpenAIAugmenter(string model, string apiKey) : IAugmenter
     {

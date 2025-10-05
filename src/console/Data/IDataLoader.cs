@@ -1,4 +1,6 @@
-namespace console
+using console.Models;
+
+namespace console.Data
 {
     public interface IDataLoader
     {
