@@ -11,22 +11,33 @@ class Program
     {
         DotNetEnv.Env.Load(); // loads .env file
 
+        if(args.Length < 2)
+        {
+            Console.WriteLine("Usage: dotnet run github <repository-url>");
+            Console.WriteLine("Make sure to set the OPENAI_API_KEY environment variable.");
+            return;
+        }
+
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY environment variable is not set.");
+        var source = args[0];
+        var sourceValue = args[1];
 
         var embedder = new OpenAIEmbedder("text-embedding-3-small", apiKey);
 
-        // Option 1: Load from a file
-        //var dataLoader = new FileDataLoader(embedder, "sample.txt");
+        // Option 1: Load data
 
-        // Option 2: Load from GitHub commit messages
-        var dataLoader = new GitHubDataLoader(embedder, "https://github.com/testlemon/testlemon");
-        // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+        IDataLoader dataLoader = source switch
+        {
+            "file" => new FileDataLoader(embedder, sourceValue),
+            "github" => new GitHubDataLoader(embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+            _ => throw new InvalidOperationException("Unsupported data source. Use 'file' or 'github'."),
+        };
 
         var retriver = new Retriver(embedder);
         var augmenter = new OpenAIAugmenter("gpt-4.1-mini", apiKey);
 
         // Step 1. Load file content
-        dataLoader.Load();
+        await dataLoader.LoadAsync();
 
         // Step 2: Chunk text
         var chunks = await dataLoader.GetContentChunks();
@@ -37,6 +48,11 @@ class Program
             Console.Write("Enter your question (or press Enter to exit): ");
             var input = Console.ReadLine() ?? string.Empty;
             var query = input.Trim();
+
+            if(string.IsNullOrEmpty(query))
+            {
+                break;
+            }
 
             // Step 5. Retrieve top k findings
             var topChunks = await retriver.GetTopKChunks(chunks, query, k: 3);

@@ -4,7 +4,7 @@ namespace console.Data
 {
     public interface IDataLoader
     {
-        public void Load();
+        public Task LoadAsync();
         
         public Task<List<Chunk>> GetContentChunks();
     }

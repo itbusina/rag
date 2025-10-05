@@ -9,7 +9,7 @@ namespace console.Data
         private readonly string _filePath = filePath;
         private string _content = string.Empty;
 
-        public void Load()
+        public async Task LoadAsync()
         {
             if (!File.Exists(_filePath))
             {
@@ -17,7 +17,7 @@ namespace console.Data
                 return;
             }
 
-            _content = File.ReadAllText(_filePath);
+            _content = await File.ReadAllTextAsync(_filePath);
         }
 
         public async Task<List<Chunk>> GetContentChunks()

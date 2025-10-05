@@ -33,13 +33,8 @@ namespace console.Data
             _owner = parts[0];
             _repoName = parts[1].Replace(".git", ""); // Remove .git suffix if present
         }
-
-        public void Load()
-        {
-            LoadAsync().GetAwaiter().GetResult();
-        }
-
-        private async Task LoadAsync()
+        
+        public async Task LoadAsync()
         {
             try
             {
@@ -72,7 +67,7 @@ namespace console.Data
                     var commitMessage = commit.Commit.Message;
                     var commitAuthor = commit.Commit.Author.Name;
                     var commitDate = commit.Commit.Author.Date;
-                    
+
                     Console.WriteLine($"Processing commit {commitSha.Substring(0, 7)}: {commitMessage.Split('\n')[0]}");
 
                     // Add commit message
