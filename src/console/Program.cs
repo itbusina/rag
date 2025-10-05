@@ -16,7 +16,7 @@ class Program
             Console.WriteLine("\n\nWelcome to the Retrieval-Augmented Generation (RAG) app.");
             Console.WriteLine("Usage: dotnet run <source> <source-value>");
             Console.WriteLine("  Sources:");
-            Console.WriteLine("    file <file-path>         - Load from a text file");
+            Console.WriteLine("    file <file-path>         - Load from a file (supports .txt, .pdf, .md, .csv, .json, .xml, .html, .log, etc.)");
             Console.WriteLine("    github <repository-url>  - Load from GitHub repository");
             Console.WriteLine("    http <url>               - Load from HTML page");
             Console.WriteLine("    sitemap <sitemap-url>    - Load from sitemap (all URLs in parallel)");
