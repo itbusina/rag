@@ -57,7 +57,7 @@ namespace console.Data
             }
         }
 
-        private void RemoveNonContentNodes(HtmlDocument htmlDoc)
+        private static void RemoveNonContentNodes(HtmlDocument htmlDoc)
         {
             // Remove scripts, styles, and other non-content elements
             var nodesToRemove = new[] { "script", "style", "nav", "footer", "header", "iframe", "noscript" };
@@ -75,7 +75,7 @@ namespace console.Data
             }
         }
 
-        private HtmlNode? FindMainContent(HtmlDocument htmlDoc)
+        private static HtmlNode? FindMainContent(HtmlDocument htmlDoc)
         {
             // Try to find the main content area using common patterns
             var selectors = new[]
@@ -145,7 +145,7 @@ namespace console.Data
             }
         }
 
-        private string ExtractTextFromNode(HtmlNode node)
+        private static string ExtractTextFromNode(HtmlNode node)
         {
             var text = node.InnerText.Trim();
             
@@ -181,22 +181,22 @@ namespace console.Data
                 throw new InvalidOperationException("No content loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var chunks = new List<Chunk>();
-
-            // Create a chunk for each paragraph
-            foreach (var paragraph in _paragraphs)
+            // Compute embeddings in parallel for all paragraphs
+            var chunkTasks = _paragraphs.Select(async paragraph => new Chunk
             {
-                var chunk = new Chunk
-                {
-                    Content = paragraph,
-                    Embedding = await _embedder.GetEmbedding(paragraph)
-                };
-                
-                chunks.Add(chunk);
-            }
+                Content = paragraph,
+                Embedding = await _embedder.GetEmbedding(paragraph)
+            }).ToList();
 
-            Console.WriteLine($"Created {chunks.Count} chunks with embeddings.");
-            return chunks;
+            var chunks = await Task.WhenAll(chunkTasks);
+
+            Console.WriteLine($"Created {chunks.Length} chunks with embeddings.");
+            return [.. chunks];
+        }
+
+        public List<string> GetContentBlocks()
+        {
+            return _paragraphs;
         }
     }
 }
