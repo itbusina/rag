@@ -14,7 +14,11 @@ class Program
         if(args.Length < 2)
         {
             Console.WriteLine("\n\nWelcome to the Retrieval-Augmented Generation (RAG) app.");
-            Console.WriteLine("Usage: dotnet run github <repository-url>");
+            Console.WriteLine("Usage: dotnet run <source> <source-value>");
+            Console.WriteLine("  Sources:");
+            Console.WriteLine("    file <file-path>         - Load from a text file");
+            Console.WriteLine("    github <repository-url>  - Load from GitHub repository");
+            Console.WriteLine("    http <url>               - Load from HTML page");
             Console.WriteLine("Make sure to set the OPENAI_API_KEY environment variable.");
             return;
         }
@@ -31,7 +35,8 @@ class Program
         {
             "file" => new FileDataLoader(embedder, sourceValue),
             "github" => new GitHubDataLoader(embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-            _ => throw new InvalidOperationException("Unsupported data source. Use 'file' or 'github'."),
+            "http" => new HttpDataLoader(embedder, sourceValue),
+            _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'github', or 'http'."),
         };
 
         var retriver = new Retriver(embedder);
