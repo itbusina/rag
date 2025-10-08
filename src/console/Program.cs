@@ -63,9 +63,9 @@ class Program
             var topChunks = await retriever.GetTopKChunks(chunks, query, k: 3);
 
             // Step 6: Augment with context
-            var augmentedResponse = await summarizer.SummarizeAsync(query, topChunks);
+            var summary = await summarizer.SummarizeAsync(query, topChunks);
 
-            Console.WriteLine(augmentedResponse);
+            Console.WriteLine(summary);
         }
     }
 }
