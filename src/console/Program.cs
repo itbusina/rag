@@ -15,6 +15,7 @@ class Program
             Console.WriteLine("Usage: dotnet run <source> <source-value>");
             Console.WriteLine("  Sources:");
             Console.WriteLine("    file <file-path>         - Load from a file (supports .txt, .pdf, .md, .csv, .json, .xml, .html, .log, etc.)");
+            Console.WriteLine("    qa <file-path>           - Load Q&A pairs from a text file (separated by \\n--\\n)");
             Console.WriteLine("    github <repository-url>  - Load from GitHub repository");
             Console.WriteLine("    http <url>               - Load from HTML page");
             Console.WriteLine("    sitemap <sitemap-url>    - Load from sitemap (all URLs in parallel)");
@@ -33,10 +34,11 @@ class Program
         IDataLoader dataLoader = source switch
         {
             "file" => new FileDataLoader(embedder, sourceValue),
+            "qa" => new QADataLoader(embedder, sourceValue),
             "github" => new GitHubDataLoader(embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
             "http" => new HttpDataLoader(embedder, sourceValue),
             "sitemap" => new SitemapDataLoader(embedder, sourceValue),
-            _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'github', 'http', or 'sitemap'."),
+            _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'qa', 'github', 'http', or 'sitemap'."),
         };
 
         // Step 1. Load file content
