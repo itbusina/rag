@@ -26,7 +26,7 @@ class Program
         var source = args[0];
         var sourceValue = args[1];
 
-        var embedder = new OpenAIEmbedder("text-embedding-3-small", apiKey);
+        var embedder = new OllamaEmbedder("nomic-embed-text"); // new OpenAIEmbedder("text-embedding-3-small", apiKey);
         var summarizer = new OllamaSummarizer("llama3.1:8b"); //new OpenAISummarizer("gpt-4.1-mini", apiKey);
         var retriever = new Retriever(embedder);
 
