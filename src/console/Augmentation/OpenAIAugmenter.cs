@@ -5,16 +5,19 @@ namespace console.Augmentation
 {
     public class OpenAIAugmenter(string model, string apiKey) : IAugmenter
     {
-        private const string systemPrompt = "You are an expert assistant. Answer based only on the given context.";
+        private const string SYSTEM_PROMPT = "You are an expert assistant. Answer based only on the given context.";
         public readonly ChatClient chatClient = new(model, apiKey);
 
         public async Task<string> AugmentAsync(string query, List<Chunk> contextChunks)
         {
-            var userPrompt = $"Context: {string.Join("\n", contextChunks.Select(c => c.Content))}\n\nQuestion: {query}";
+            // create LLM context from chunk's content and metadata
+            var context = string.Join("\n", contextChunks.Select(c => "Content: " + c.Content + "\n" + string.Join("\n", c.Metadata.Select(m => $"{m.Key}: {m.Value}"))));
+
+            // prepare messages for LLM
             var messages = new List<ChatMessage>
             {
-                new SystemChatMessage(systemPrompt),
-                new UserChatMessage(userPrompt)
+                new SystemChatMessage(SYSTEM_PROMPT),
+                new UserChatMessage($"Context: {context}\n\nQuestion: {query}")
             };
 
             var completion = await chatClient.CompleteChatAsync(messages);

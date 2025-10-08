@@ -106,6 +106,10 @@ namespace console.Data
             foreach (var chunk in chunks)
             {
                 chunk.Embedding = await _embedder.GetEmbedding(chunk.Content);
+                chunk.Metadata = new Dictionary<string, string>
+                {
+                    { "file_path", Path.GetFileName(_filePath) }
+                };
             }
 
             Console.WriteLine($"Generated embeddings for all {chunks.Count} chunks.");

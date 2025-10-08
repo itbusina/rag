@@ -4,13 +4,24 @@ using Octokit;
 
 namespace console.Data
 {
+    public class GitHubChunkMetadata
+    {
+        public required string Repository { get; set; }
+        public required string Organization { get; set; }
+        public required string RepositoryUrl { get; set; }
+        public required string CommitMessage { get; set; }
+        public required string CommitSha { get; set; }
+        public required string Author { get; set; }
+        public required DateTime Date { get; set; }
+    }
+    
     public class GitHubDataLoader : IDataLoader
     {
         private readonly IEmbedder _embedder;
         private readonly string _repositoryUrl;
         private string _owner = string.Empty;
         private string _repoName = string.Empty;
-        private readonly List<string> _allComments = [];
+        private readonly List<GitHubChunkMetadata> _allComments = [];
 
         public GitHubDataLoader(IEmbedder embedder, string repositoryUrl)
         {
@@ -33,7 +44,7 @@ namespace console.Data
             _owner = parts[0];
             _repoName = parts[1].Replace(".git", ""); // Remove .git suffix if present
         }
-        
+
         public async Task LoadAsync()
         {
             try
@@ -68,12 +79,22 @@ namespace console.Data
                     var commitAuthor = commit.Commit.Author.Name;
                     var commitDate = commit.Commit.Author.Date;
 
-                    Console.WriteLine($"Processing commit {commitSha.Substring(0, 7)}: {commitMessage.Split('\n')[0]}");
+                    Console.WriteLine($"Processing commit {commitSha.Substring(0, 7)}: {commitMessage}");
 
                     // Add commit message
                     if (!string.IsNullOrWhiteSpace(commitMessage))
                     {
-                        _allComments.Add($"[Commit {commitSha.Substring(0, 7)}] by {commitAuthor} on {commitDate:yyyy-MM-dd}: {commitMessage}");
+                        _allComments.Add(new GitHubChunkMetadata
+                        {
+                            Repository = _repoName,
+                            Organization = _owner,
+                            RepositoryUrl = _repositoryUrl,
+                            CommitMessage = commitMessage,
+                            CommitSha = commitSha,
+                            Author = commitAuthor,
+                            Date = commitDate.DateTime
+                        });
+
                         totalMessages++;
                     }
                 }
@@ -107,8 +128,18 @@ namespace console.Data
 
             var chunks = _allComments.Select(async comment => new Chunk
             {
-                Content = comment,
-                Embedding = await _embedder.GetEmbedding(comment)
+                Content = comment.CommitMessage,
+                Embedding = await _embedder.GetEmbedding(comment.CommitMessage),
+                Metadata = new Dictionary<string, string>
+                {
+                    { "repository", comment.Repository },
+                    { "organization", comment.Organization },
+                    { "repository_url", comment.RepositoryUrl },
+                    { "commit_url", $"{comment.RepositoryUrl}/commit/{comment.CommitSha}" },
+                    { "commit_sha", comment.CommitSha },
+                    { "author", comment.Author },
+                    { "date", comment.Date.ToString("o") } // ISO 8601 format
+                }
             }).ToList();
 
             await Task.WhenAll(chunks);

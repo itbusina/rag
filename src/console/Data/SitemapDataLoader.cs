@@ -4,18 +4,12 @@ using System.Xml.Linq;
 
 namespace console.Data
 {
-    public class SitemapDataLoader : IDataLoader
+    public class SitemapDataLoader(IEmbedder embedder, string sitemapUrl) : IDataLoader
     {
-        private readonly IEmbedder _embedder;
-        private readonly string _sitemapUrl;
-        private readonly List<string> _allContentBlocks = [];
+        private readonly IEmbedder _embedder = embedder;
+        private readonly string _sitemapUrl = sitemapUrl;
+        private readonly List<(string, string)> _allContentBlocks = [];
         private static readonly HttpClient _httpClient = new();
-
-        public SitemapDataLoader(IEmbedder embedder, string sitemapUrl)
-        {
-            _embedder = embedder;
-            _sitemapUrl = sitemapUrl;
-        }
 
         public async Task LoadAsync()
         {
@@ -44,12 +38,12 @@ namespace console.Data
                     {
                         var httpLoader = new HttpDataLoader(_embedder, url);
                         await httpLoader.LoadAsync();
-                        return httpLoader.GetContentBlocks();
+                        return (httpLoader.GetContentBlocks(), url);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error loading URL {url}: {ex.Message}");
-                        return new List<string>();
+                        return ([], url);
                     }
                 }).ToList();
 
@@ -59,7 +53,7 @@ namespace console.Data
                 // Aggregate all content blocks
                 foreach (var contentBlocks in results)
                 {
-                    _allContentBlocks.AddRange(contentBlocks);
+                    _allContentBlocks.AddRange(contentBlocks.Item1.Select(block => (block, contentBlocks.url)));
                 }
 
                 Console.WriteLine($"Successfully loaded {_allContentBlocks.Count} total content blocks from {urls.Count} URLs.");
@@ -139,7 +133,7 @@ namespace console.Data
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Error loading sub-sitemap {subSitemapUrl}: {ex.Message}");
-                            return new List<string>();
+                            return [];
                         }
                     }).ToList();
 
@@ -172,8 +166,12 @@ namespace console.Data
             // Compute embeddings in parallel for all content blocks
             var chunkTasks = _allContentBlocks.Select(async content => new Chunk
             {
-                Content = content,
-                Embedding = await _embedder.GetEmbedding(content)
+                Content = content.Item1,
+                Embedding = await _embedder.GetEmbedding(content.Item1),
+                Metadata = new Dictionary<string, string>
+                {
+                    { "source_url", content.Item2 }
+                }
             }).ToList();
 
             var chunks = await Task.WhenAll(chunkTasks);

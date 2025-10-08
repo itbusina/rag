@@ -4,18 +4,12 @@ using HtmlAgilityPack;
 
 namespace console.Data
 {
-    public class HttpDataLoader : IDataLoader
+    public class HttpDataLoader(IEmbedder embedder, string url) : IDataLoader
     {
-        private readonly IEmbedder _embedder;
-        private readonly string _url;
+        private readonly IEmbedder _embedder = embedder;
+        private readonly string _url = url;
         private readonly List<string> _paragraphs = [];
         private static readonly HttpClient _httpClient = new();
-
-        public HttpDataLoader(IEmbedder embedder, string url)
-        {
-            _embedder = embedder;
-            _url = url;
-        }
 
         public async Task LoadAsync()
         {
@@ -158,7 +152,7 @@ namespace console.Data
             return text;
         }
 
-        private string GetNodePrefix(HtmlNode node)
+        private static string GetNodePrefix(HtmlNode node)
         {
             return node.Name.ToLower() switch
             {
@@ -185,7 +179,11 @@ namespace console.Data
             var chunkTasks = _paragraphs.Select(async paragraph => new Chunk
             {
                 Content = paragraph,
-                Embedding = await _embedder.GetEmbedding(paragraph)
+                Embedding = await _embedder.GetEmbedding(paragraph),
+                Metadata = new Dictionary<string, string>
+                {
+                    { "source_url", _url }
+                }
             }).ToList();
 
             var chunks = await Task.WhenAll(chunkTasks);
