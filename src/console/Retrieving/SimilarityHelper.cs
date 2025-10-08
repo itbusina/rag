@@ -1,4 +1,4 @@
-namespace console.Retriving
+namespace console.Retrieving
 {
     public static class SimilarityHelper
     {

@@ -1,9 +1,7 @@
-﻿using console;
-using console.Augmentation;
-using console.Data;
+﻿using console.Data;
 using console.Embeddings;
-using console.Retriving;
-using OpenAI.Chat;
+using console.Retrieving;
+using console.Summarization;
 
 class Program
 {
@@ -29,8 +27,8 @@ class Program
         var sourceValue = args[1];
 
         var embedder = new OpenAIEmbedder("text-embedding-3-small", apiKey);
-
-        // Option 1: Load data
+        var summarizer = new OpenAISummarizer("gpt-4.1-mini", apiKey);
+        var retriever = new Retriever(embedder);
 
         IDataLoader dataLoader = source switch
         {
@@ -41,13 +39,10 @@ class Program
             _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'github', 'http', or 'sitemap'."),
         };
 
-        var retriver = new Retriver(embedder);
-        var augmenter = new OpenAIAugmenter("gpt-4.1-mini", apiKey);
-
         // Step 1. Load file content
         await dataLoader.LoadAsync();
 
-        // Step 2: Chunk text
+        // Step 2: Load chunks for data source
         var chunks = await dataLoader.GetContentChunks();
 
         // Step 4. Query
@@ -63,10 +58,10 @@ class Program
             }
 
             // Step 5. Retrieve top k findings
-            var topChunks = await retriver.GetTopKChunks(chunks, query, k: 3);
+            var topChunks = await retriever.GetTopKChunks(chunks, query, k: 3);
 
             // Step 6: Augment with context
-            var augmentedResponse = await augmenter.AugmentAsync(query, topChunks);
+            var augmentedResponse = await summarizer.SummarizeAsync(query, topChunks);
 
             Console.WriteLine(augmentedResponse);
         }

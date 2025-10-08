@@ -1,9 +1,9 @@
 using console.Embeddings;
 using console.Models;
 
-namespace console.Retriving
+namespace console.Retrieving
 {
-    public class Retriver(IEmbedder embedder)
+    public class Retriever(IEmbedder embedder)
     {
         private readonly IEmbedder _embedder = embedder;
 
