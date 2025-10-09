@@ -11,7 +11,10 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/console/bin/Debug/net9.0/console.dll",
-            "args": [],
+            "args": [
+                "qa",
+                "/Users/kirylbahdanovich/Documents/GitHub/rag/files/qa.txt"
+            ],
             "cwd": "${workspaceFolder}/src/console",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
