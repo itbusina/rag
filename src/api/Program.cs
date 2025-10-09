@@ -1,8 +1,7 @@
 using core.Data;
 using core.Embeddings;
-using core.Models;
-using core.Retrieving;
 using core.Summarization;
+using core.VectorStorage;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,21 +34,24 @@ app.UseCors();
 
 app.UseHttpsRedirection();
 
-var storage = new Dictionary<string, List<Chunk>>();
 
 var embedder = new OllamaEmbedder("nomic-embed-text"); // new OpenAIEmbedder("text-embedding-3-small", apiKey);
 var summarizer = new OllamaSummarizer("llama3.1:8b"); //new OpenAISummarizer("gpt-4.1-mini", apiKey);
-var retriever = new Retriever(embedder);
+var vectorStorage = new QdrantVectorStorage();
 
 app.MapPost("/assistant", async (AssistantRequest request) =>
 {
-    IDataLoader dataLoader = request.SourceType switch
+    var source = request.SourceType;
+    var sourceValue = request.SourceValue;
+
+    // Load data to vectore storage
+    IDataLoader dataLoader = source switch
     {
-        "file" => new FileDataLoader(embedder, request.SourceValue),
-        "qa" => new QADataLoader(embedder, request.SourceValue),
-        "github" => new GitHubDataLoader(embedder, request.SourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-        "http" => new HttpDataLoader(embedder, request.SourceValue),
-        "sitemap" => new SitemapDataLoader(embedder, request.SourceValue),
+        "file" => new FileDataLoader(embedder, sourceValue),
+        "qa" => new QADataLoader(embedder, sourceValue),
+        "github" => new GitHubDataLoader(embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+        "http" => new HttpDataLoader(embedder, sourceValue),
+        "sitemap" => new SitemapDataLoader(embedder, sourceValue),
         _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'qa', 'github', 'http', or 'sitemap'."),
     };
 
@@ -59,43 +61,36 @@ app.MapPost("/assistant", async (AssistantRequest request) =>
     // Step 2: Load chunks for data source
     var chunks = await dataLoader.GetContentChunks();
 
-    // Store chunks in memory (in a real app, consider using a persistent storage)
-    var id = Guid.NewGuid().ToString();
-    storage[id] = chunks;
+    // Step 3: Store chunks in vector storage
+    var collectionName = Guid.NewGuid().ToString();
+    await vectorStorage.CreateCollectionAsync(collectionName, 768); // 768 is the dimension of the "nomic-embed-text" model
+    await vectorStorage.InsertAsync(collectionName, chunks);
 
     return Results.Ok(new
     {
-        Id = id,
-        Chunks = chunks.Select(x => new { x.Content, x.Metadata }),
+        Id = collectionName,
     });
 })
 .WithName("CreateAssistant");
 
-app.MapPost("/assistant/{id:guid}", async (Guid id, [FromBody] string query) =>
+app.MapPost("/assistant/{id:guid}", async (Guid id, [FromBody] string input) =>
 {
-    if (storage.TryGetValue(id.ToString(), out var chunks))
+    var collectionName = id.ToString();
+
+    // Step 5. Convert query to embedding
+    var query = await embedder.GetEmbedding(input.Trim());
+
+    // Step 6. Retrieve top-k chunks from vector storage
+    var topChunks = await vectorStorage.SearchAsync(collectionName, query);
+
+    // Step 7: Summarize the answer
+    var summary = await summarizer.SummarizeAsync(input, [.. topChunks]);
+
+    return Results.Ok(new
     {
-        query = query.Trim();
-
-        if (string.IsNullOrEmpty(query))
-        {
-            return Results.BadRequest("Query cannot be empty.");
-        }
-
-        // Step 5. Retrieve top k findings
-        var topChunks = await retriever.GetTopKChunks(chunks, query, k: 3);
-
-        // Step 6: Augment with context
-        var summary = await summarizer.SummarizeAsync(query, topChunks);
-
-        return Results.Ok(new
-        {
-            Id = id,
-            Response = summary
-        });
-    }
-
-    return Results.NotFound();
+        Id = id,
+        Response = summary
+    });
 });
 
 app.MapGet("/assistant/{id:guid}/chat.js", async (Guid id, HttpContext context) =>
@@ -103,16 +98,16 @@ app.MapGet("/assistant/{id:guid}/chat.js", async (Guid id, HttpContext context) 
     var scheme = context.Request.Scheme;
     var host = context.Request.Host.Value;
     var baseUrl = $"{scheme}://{host}";
-    
+
     // Read the widget script template from file
     var scriptPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "chat-widget.js");
     var scriptTemplate = await File.ReadAllTextAsync(scriptPath);
-    
+
     // Replace placeholders with actual values
     var script = scriptTemplate
         .Replace("{{ASSISTANT_ID}}", id.ToString())
         .Replace("{{API_BASE_URL}}", baseUrl);
-    
+
     return Results.Content(script, "application/javascript");
 })
 .WithName("GetChatWidget");

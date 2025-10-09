@@ -1,20 +1,15 @@
-using core.Embeddings;
 using core.Models;
 
 namespace core.Retrieving
 {
-    public class Retriever(IEmbedder embedder)
+    public class Retriever
     {
-        private readonly IEmbedder _embedder = embedder;
-
-        public async Task<List<Chunk>> GetTopKChunks(List<Chunk> chunks, string query, int k = 3)
+        public static List<Chunk> Search(List<Chunk> chunks, float[] query, int limit = 3)
         {
-            var queryEmbedding = await _embedder.GetEmbedding(query);
-
             var topChunks = chunks
-                .Select(c => new { Chunk = c, Score = SimilarityHelper.CosineSimilarity(c.Embedding, queryEmbedding) })
+                .Select(c => new { Chunk = c, Score = SimilarityHelper.CosineSimilarity(c.Embedding, query) })
                 .OrderByDescending(x => x.Score)
-                .Take(k)
+                .Take(limit)
                 .Select(x => x.Chunk)
                 .ToList();
 
