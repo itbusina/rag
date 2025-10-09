@@ -1,7 +1,7 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 
-namespace console.Retrieving
+namespace core.Retrieving
 {
     public class Retriever(IEmbedder embedder)
     {

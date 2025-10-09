@@ -1,8 +1,8 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 using System.Xml.Linq;
 
-namespace console.Data
+namespace core.Data
 {
     public class SitemapDataLoader(IEmbedder embedder, string sitemapUrl) : IDataLoader
     {

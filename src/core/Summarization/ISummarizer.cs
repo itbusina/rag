@@ -1,6 +1,6 @@
-using console.Models;
+using core.Models;
 
-namespace console.Summarization
+namespace core.Summarization
 {
     public interface ISummarizer
     {

@@ -1,8 +1,8 @@
-using console.Data;
-using console.Embeddings;
-using console.Models;
-using console.Retrieving;
-using console.Summarization;
+using core.Data;
+using core.Embeddings;
+using core.Models;
+using core.Retrieving;
+using core.Summarization;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);

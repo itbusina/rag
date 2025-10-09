@@ -1,8 +1,8 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 using HtmlAgilityPack;
 
-namespace console.Data
+namespace core.Data
 {
     public class HttpDataLoader(IEmbedder embedder, string url) : IDataLoader
     {

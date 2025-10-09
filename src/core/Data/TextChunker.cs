@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using console.Models;
+using core.Models;
 
-namespace console.Data
+namespace core.Data
 {
     public static class TextChunker
     {

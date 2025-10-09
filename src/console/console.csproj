@@ -9,11 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetEnv" Version="3.1.1" />
-    <PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
-    <PackageReference Include="Octokit" Version="14.0.0" />
-    <PackageReference Include="OpenAI" Version="2.5.0" />
-    <PackageReference Include="PdfPig" Version="0.1.9" />
+    <ProjectReference Include="../core/core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

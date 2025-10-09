@@ -1,7 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 
-namespace console.Embeddings
+namespace core.Embeddings
 {
     public class OllamaEmbedder : IEmbedder
     {

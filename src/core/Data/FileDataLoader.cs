@@ -1,9 +1,9 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
-namespace console.Data
+namespace core.Data
 {
     public class FileDataLoader(IEmbedder embedder, string filePath) : IDataLoader
     {

@@ -1,4 +1,4 @@
-namespace console.Embeddings
+namespace core.Embeddings
 {
     public interface IEmbedder
     {

@@ -1,7 +1,7 @@
-using console.Models;
+using core.Models;
 using OpenAI.Chat;
 
-namespace console.Summarization
+namespace core.Summarization
 {
     public class OpenAISummarizer(string model, string apiKey) : ISummarizer
     {

@@ -1,8 +1,8 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 using Octokit;
 
-namespace console.Data
+namespace core.Data
 {
     public class GitHubChunkMetadata
     {

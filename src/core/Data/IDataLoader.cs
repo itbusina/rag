@@ -1,6 +1,6 @@
-using console.Models;
+using core.Models;
 
-namespace console.Data
+namespace core.Data
 {
     public interface IDataLoader
     {

@@ -1,9 +1,9 @@
-using console.Models;
+using core.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace console.Summarization
+namespace core.Summarization
 {
     public class OllamaSummarizer : ISummarizer
     {

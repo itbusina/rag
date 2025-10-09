@@ -1,7 +1,7 @@
-﻿using console.Data;
-using console.Embeddings;
-using console.Retrieving;
-using console.Summarization;
+﻿using core.Data;
+using core.Embeddings;
+using core.Retrieving;
+using core.Summarization;
 
 class Program
 {

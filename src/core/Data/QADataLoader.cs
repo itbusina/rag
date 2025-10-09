@@ -1,7 +1,7 @@
-using console.Embeddings;
-using console.Models;
+using core.Embeddings;
+using core.Models;
 
-namespace console.Data
+namespace core.Data
 {
     public class QADataLoader(IEmbedder embedder, string filePath) : IDataLoader
     {

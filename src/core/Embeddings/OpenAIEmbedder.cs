@@ -1,6 +1,6 @@
 using OpenAI.Embeddings;
 
-namespace console.Embeddings
+namespace core.Embeddings
 {
     public class OpenAIEmbedder(string model, string apiKey) : IEmbedder
     {
