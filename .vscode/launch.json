@@ -12,7 +12,7 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/console/bin/Debug/net9.0/console.dll",
             "args": [
-                "qa",
+                "b111aa0c-c826-499c-a020-652169c39a97",
                 "/Users/kirylbahdanovich/Documents/GitHub/rag/files/qa.txt"
             ],
             "cwd": "${workspaceFolder}/src/console",
