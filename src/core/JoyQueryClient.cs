@@ -1,0 +1,54 @@
+using core.Data;
+using core.Embeddings;
+using core.Summarization;
+using core.VectorStorage;
+
+namespace core
+{
+    public class JoyQueryClient(string llmEndpoint, string embeddingModel, string summarizingModel, string qdrantEndpoint, int qdrantPort)
+    {
+        private readonly IVectorStorage _vectorStorage = new QdrantVectorStorage(qdrantEndpoint, qdrantPort);
+        private readonly IEmbedder _embedder = new OllamaEmbedder(embeddingModel, llmEndpoint);
+        private readonly ISummarizer _summarizer = new OllamaSummarizer(summarizingModel, llmEndpoint);
+
+        public async Task<string> LoadDataAsync(string sourceType, string sourceValue)
+        {
+            IDataLoader dataLoader = sourceType switch
+            {
+                "file" => new FileDataLoader(_embedder, sourceValue),
+                "qa" => new QADataLoader(_embedder, sourceValue),
+                "github" => new GitHubDataLoader(_embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+                "http" => new HttpDataLoader(_embedder, sourceValue),
+                "sitemap" => new SitemapDataLoader(_embedder, sourceValue),
+                _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'qa', 'github', 'http', or 'sitemap'."),
+            };
+
+            // Step 1. Load file content
+            await dataLoader.LoadAsync();
+
+            // Step 2: Load chunks for data source
+            var chunks = await dataLoader.GetContentChunks();
+
+            // Step 3: Store chunks in vector storage
+            var collectionName = Guid.NewGuid().ToString();
+            await _vectorStorage.CreateCollectionAsync(collectionName, 768); // 768 is the dimension of the "nomic-embed-text" model
+            await _vectorStorage.InsertAsync(collectionName, chunks);
+
+            return collectionName;
+        }
+
+        public async Task<string> QueryAsync(string collectionName, string question)
+        {
+            // Step 4. Convert query to embedding
+            var query = await _embedder.GetEmbedding(question);
+
+            // Step 5. Retrieve top-k chunks from vector storage
+            var topChunks = await _vectorStorage.SearchAsync(collectionName, query);
+
+            // Step 6: Summarize the answer
+            var summary = await _summarizer.SummarizeAsync(question, [.. topChunks]);
+
+            return summary;
+        }
+    }
+}

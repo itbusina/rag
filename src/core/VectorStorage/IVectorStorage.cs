@@ -6,6 +6,6 @@ namespace core.VectorStorage
     {
         Task CreateCollectionAsync(string collectionName, ulong vectorSize);
         Task InsertAsync(string collectionName, List<Chunk> chunks);
-        Task<IEnumerable<Chunk>> SearchAsync(string collectionName, float[] query, ulong topK);
+        Task<IEnumerable<Chunk>> SearchAsync(string collectionName, float[] query, ulong limit = 3);
     }
 }
