@@ -1,4 +1,5 @@
 using core;
+using core.Data;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +44,27 @@ var joyQueryClient = new JoyQueryClient(
     qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "localhost",
     qdrantPort: int.TryParse(Environment.GetEnvironmentVariable("QDRANT_PORT"), out var port) ? port : 6334
 );
+
+app.MapPost("/files", async (HttpRequest request) =>
+{
+    var form = await request.ReadFormAsync();
+    var collectionNames = new List<string>();
+
+    foreach (var file in form.Files)
+    {
+        if (file.Length == 0)
+            continue;
+
+        var dataLoader = new StreamDataLoader(file.FileName, file.OpenReadStream());
+        var collectionName = await joyQueryClient.LoadDataAsync(dataLoader);
+        collectionNames.Add(collectionName);
+    }
+
+    return Results.Ok(new
+    {
+        Ids = collectionNames
+    });
+}).WithName("UploadFiles");
 
 app.MapPost("/assistant", async (AssistantRequest request) =>
 {

@@ -15,19 +15,24 @@ namespace core
         {
             IDataLoader dataLoader = sourceType switch
             {
-                "file" => new FileDataLoader(_embedder, sourceValue),
-                "qa" => new QADataLoader(_embedder, sourceValue),
-                "github" => new GitHubDataLoader(_embedder, sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-                "http" => new HttpDataLoader(_embedder, sourceValue),
-                "sitemap" => new SitemapDataLoader(_embedder, sourceValue),
+                "file" => new LocalFileDataLoader(sourceValue),
+                "qa" => new QADataLoader(sourceValue),
+                "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+                "http" => new HttpDataLoader(sourceValue),
+                "sitemap" => new SitemapDataLoader(sourceValue),
                 _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'qa', 'github', 'http', or 'sitemap'."),
             };
 
+            return await LoadDataAsync(dataLoader);
+        }
+
+        public async Task<string> LoadDataAsync(IDataLoader dataLoader)
+        {
             // Step 1. Load file content
             await dataLoader.LoadAsync();
 
             // Step 2: Load chunks for data source
-            var chunks = await dataLoader.GetContentChunks();
+            var chunks = await dataLoader.GetContentChunks(_embedder);
 
             // Step 3: Store chunks in vector storage
             var collectionName = Guid.NewGuid().ToString();

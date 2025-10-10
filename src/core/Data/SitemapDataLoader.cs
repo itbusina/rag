@@ -4,9 +4,8 @@ using System.Xml.Linq;
 
 namespace core.Data
 {
-    public class SitemapDataLoader(IEmbedder embedder, string sitemapUrl) : IDataLoader
+    public class SitemapDataLoader(string sitemapUrl) : IDataLoader
     {
-        private readonly IEmbedder _embedder = embedder;
         private readonly string _sitemapUrl = sitemapUrl;
         private readonly List<(string, string)> _allContentBlocks = [];
         private static readonly HttpClient _httpClient = new();
@@ -36,7 +35,7 @@ namespace core.Data
                 {
                     try
                     {
-                        var httpLoader = new HttpDataLoader(_embedder, url);
+                        var httpLoader = new HttpDataLoader(url);
                         await httpLoader.LoadAsync();
                         return (httpLoader.GetContentBlocks(), url);
                     }
@@ -154,7 +153,7 @@ namespace core.Data
             return urls;
         }
 
-        public async Task<List<Chunk>> GetContentChunks()
+        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
         {
             if (_allContentBlocks.Count == 0)
             {
@@ -167,7 +166,7 @@ namespace core.Data
             var chunkTasks = _allContentBlocks.Select(async content => new Chunk
             {
                 Content = content.Item1,
-                Embedding = await _embedder.GetEmbedding(content.Item1),
+                Embedding = await embedder.GetEmbedding(content.Item1),
                 Metadata = new Dictionary<string, string>
                 {
                     { "source_url", content.Item2 }

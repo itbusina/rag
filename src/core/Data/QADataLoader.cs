@@ -3,9 +3,8 @@ using core.Models;
 
 namespace core.Data
 {
-    public class QADataLoader(IEmbedder embedder, string filePath) : IDataLoader
+    public class QADataLoader(string filePath) : IDataLoader
     {
-        private readonly IEmbedder _embedder = embedder;
         private readonly string _filePath = filePath;
         private readonly List<string> _qaPairs = [];
 
@@ -43,7 +42,7 @@ namespace core.Data
             }
         }
 
-        public async Task<List<Chunk>> GetContentChunks()
+        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
         {
             if (_qaPairs.Count == 0)
             {
@@ -59,7 +58,7 @@ namespace core.Data
                 var chunk = new Chunk
                 {
                     Content = qaPair,
-                    Embedding = await _embedder.GetEmbedding(qaPair),
+                    Embedding = await embedder.GetEmbedding(qaPair),
                     Metadata = new Dictionary<string, string>
                     {
                         { "file_path", Path.GetFileName(_filePath) },

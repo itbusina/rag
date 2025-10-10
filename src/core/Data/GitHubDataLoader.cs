@@ -17,15 +17,13 @@ namespace core.Data
     
     public class GitHubDataLoader : IDataLoader
     {
-        private readonly IEmbedder _embedder;
         private readonly string _repositoryUrl;
         private string _owner = string.Empty;
         private string _repoName = string.Empty;
         private readonly List<GitHubChunkMetadata> _allComments = [];
 
-        public GitHubDataLoader(IEmbedder embedder, string repositoryUrl)
+        public GitHubDataLoader(string repositoryUrl)
         {
-            _embedder = embedder;
             _repositoryUrl = repositoryUrl;
             ParseRepositoryUrl();
         }
@@ -119,7 +117,7 @@ namespace core.Data
             }
         }
 
-        public async Task<List<Chunk>> GetContentChunks()
+        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
         {
             if (_allComments.Count == 0)
             {
@@ -129,7 +127,7 @@ namespace core.Data
             var chunks = _allComments.Select(async comment => new Chunk
             {
                 Content = comment.CommitMessage,
-                Embedding = await _embedder.GetEmbedding(comment.CommitMessage),
+                Embedding = await embedder.GetEmbedding(comment.CommitMessage),
                 Metadata = new Dictionary<string, string>
                 {
                     { "repository", comment.Repository },

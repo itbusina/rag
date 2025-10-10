@@ -4,9 +4,8 @@ using HtmlAgilityPack;
 
 namespace core.Data
 {
-    public class HttpDataLoader(IEmbedder embedder, string url) : IDataLoader
+    public class HttpDataLoader(string url) : IDataLoader
     {
-        private readonly IEmbedder _embedder = embedder;
         private readonly string _url = url;
         private readonly List<string> _paragraphs = [];
         private static readonly HttpClient _httpClient = new();
@@ -168,7 +167,7 @@ namespace core.Data
             };
         }
 
-        public async Task<List<Chunk>> GetContentChunks()
+        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
         {
             if (_paragraphs.Count == 0)
             {
@@ -179,7 +178,7 @@ namespace core.Data
             var chunkTasks = _paragraphs.Select(async paragraph => new Chunk
             {
                 Content = paragraph,
-                Embedding = await _embedder.GetEmbedding(paragraph),
+                Embedding = await embedder.GetEmbedding(paragraph),
                 Metadata = new Dictionary<string, string>
                 {
                     { "source_url", _url }
