@@ -135,22 +135,27 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var chunks = TextChunker.ChunkText(_content, maxTokens: 200, overlap: 50);
+            var textChunks = TextChunker.ChunkText(_content, maxTokens: 200, overlap: 50);
 
-            Console.WriteLine($"Created {chunks.Count} chunks from file content.");
-
-            foreach (var chunk in chunks)
+            Console.WriteLine($"Created {textChunks.Count} chunks from file content.");
+            
+            var chunkTasks = textChunks.Select(async content => new Chunk
             {
-                chunk.Embedding = await embedder.GetEmbedding(chunk.Content);
-                chunk.Metadata = new Dictionary<string, string>
+                Content = content,
+                SourceType = SourceType.Stream,
+                SourceValue = _filename,
+                Embedding = await embedder.GetEmbedding(content),
+                Metadata = new Dictionary<string, string>
                 {
                     { "file_name", _filename }
-                };
-            }
+                }
+            }).ToList();
 
-            Console.WriteLine($"Generated embeddings for all {chunks.Count} chunks.");
+            var chunks = await Task.WhenAll(chunkTasks);
 
-            return chunks;
+            Console.WriteLine($"Generated embeddings for all {chunks.Length} chunks.");
+
+            return [..chunks];
         }
     }
 }

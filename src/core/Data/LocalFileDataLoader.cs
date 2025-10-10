@@ -68,7 +68,7 @@ namespace core.Data
                 foreach (Page page in document.GetPages())
                 {
                     var pageText = page.Text;
-                    
+
                     if (!string.IsNullOrWhiteSpace(pageText))
                     {
                         // Add page separator for context
@@ -78,7 +78,7 @@ namespace core.Data
                 }
 
                 _content = textBuilder.ToString();
-                
+
                 if (string.IsNullOrWhiteSpace(_content))
                 {
                     Console.WriteLine("No text content found in the PDF document.");
@@ -98,17 +98,27 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var chunks = TextChunker.ChunkText(_content, maxTokens: 200, overlap: 50);
+            var textChunks = TextChunker.ChunkText(_content, maxTokens: 200, overlap: 50);
 
-            Console.WriteLine($"Created {chunks.Count} chunks from file content.");
+            Console.WriteLine($"Created {textChunks.Count} chunks from file content.");
 
-            foreach (var chunk in chunks)
+            var chunks = new List<Chunk>();
+
+            foreach (var text in textChunks)
             {
-                chunk.Embedding = await embedder.GetEmbedding(chunk.Content);
-                chunk.Metadata = new Dictionary<string, string>
+                var chunk = new Chunk
                 {
-                    { "file_path", Path.GetFileName(_filePath) }
+                    Content = text,
+                    SourceType = SourceType.File,
+                    SourceValue = _filePath,
+                    Embedding = await embedder.GetEmbedding(text),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "file_path", Path.GetFileName(_filePath) }
+                    },
                 };
+
+                chunks.Add(chunk);
             }
 
             Console.WriteLine($"Generated embeddings for all {chunks.Count} chunks.");

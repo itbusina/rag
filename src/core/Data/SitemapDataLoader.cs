@@ -166,6 +166,8 @@ namespace core.Data
             var chunkTasks = _allContentBlocks.Select(async content => new Chunk
             {
                 Content = content.Item1,
+                SourceType = SourceType.Sitemap,
+                SourceValue = _sitemapUrl,
                 Embedding = await embedder.GetEmbedding(content.Item1),
                 Metadata = new Dictionary<string, string>
                 {

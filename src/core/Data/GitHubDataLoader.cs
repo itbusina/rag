@@ -127,6 +127,8 @@ namespace core.Data
             var chunks = _allComments.Select(async comment => new Chunk
             {
                 Content = comment.CommitMessage,
+                SourceType = SourceType.GitHub,
+                SourceValue = _repositoryUrl,
                 Embedding = await embedder.GetEmbedding(comment.CommitMessage),
                 Metadata = new Dictionary<string, string>
                 {

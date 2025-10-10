@@ -178,6 +178,8 @@ namespace core.Data
             var chunkTasks = _paragraphs.Select(async paragraph => new Chunk
             {
                 Content = paragraph,
+                SourceType = SourceType.Url,
+                SourceValue = _url,
                 Embedding = await embedder.GetEmbedding(paragraph),
                 Metadata = new Dictionary<string, string>
                 {

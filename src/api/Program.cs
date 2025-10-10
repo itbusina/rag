@@ -64,7 +64,13 @@ app.MapPost("/files", async (HttpRequest request) =>
     {
         Ids = collectionNames
     });
-}).WithName("UploadFiles");
+}).WithName("AddDataSources");
+
+app.MapGet("/files", async (HttpRequest request) =>
+{
+    var list = await joyQueryClient.ListDataSources();
+    return Results.Ok(list);
+}).WithName("ListDataSources");
 
 app.MapPost("/assistant", async (AssistantRequest request) =>
 {

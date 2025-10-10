@@ -55,5 +55,10 @@ namespace core
 
             return summary;
         }
+
+        public async Task<List<(string, string, string)>> ListDataSources()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

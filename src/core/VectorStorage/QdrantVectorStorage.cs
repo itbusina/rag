@@ -21,14 +21,27 @@ namespace core.VectorStorage
 
         public async Task InsertAsync(string collectionName, List<Chunk> chunks)
         {
-            var points = chunks.Select(c => new PointStruct
+            var points = chunks.Select(chunk =>
             {
-                Id = Guid.NewGuid(),
-                Vectors = c.Embedding,
-                Payload =
+                var point = new PointStruct
                 {
-                    ["text"] = c.Content,
+                    Id = Guid.NewGuid(),
+                    Vectors = chunk.Embedding,
+                    Payload =
+                    {
+                        ["text"] = chunk.Content,
+                        ["source_type"] = chunk.SourceType.ToString(),
+                        ["source_value"] = chunk.SourceValue
+                    }
+                };
+
+                // extend the payload with chunk metadata
+                foreach (var metadata in chunk.Metadata)
+                {
+                    point.Payload.Add(metadata.Key, metadata.Value);
                 }
+
+                return point;
             }).ToList();
 
             var updateResult = await _client.UpsertAsync(collectionName, points);
@@ -41,6 +54,9 @@ namespace core.VectorStorage
             return [.. points.Select(p => new Chunk
             {
                 Content = p.Payload["text"].ToString() ?? string.Empty,
+                SourceType = Enum.Parse<SourceType>(p.Payload["source_type"].ToString() ?? string.Empty),
+                SourceValue = p.Payload["source_value"].ToString() ?? string.Empty,
+                Metadata = p.Payload.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString())).ToDictionary()
             })];
         }
     }
