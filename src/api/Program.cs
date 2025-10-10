@@ -26,6 +26,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+// Enable static file hosting from wwwroot
+app.UseDefaultFiles(); // serves index.html automatically
+app.UseStaticFiles();
+
 // Enable CORS
 app.UseCors();
 
@@ -70,7 +74,7 @@ app.MapGet("/assistant/{id:guid}/chat.js", async (Guid id, HttpContext context) 
     var baseUrl = $"{scheme}://{host}";
 
     // Read the widget script template from file
-    var scriptPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "chat-widget.js");
+    var scriptPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "js/chat-widget.js");
     var scriptTemplate = await File.ReadAllTextAsync(scriptPath);
 
     // Replace placeholders with actual values
