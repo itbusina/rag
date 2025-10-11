@@ -4,6 +4,16 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Plus, FileText, Trash2, Loader2 } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { 
@@ -25,6 +35,9 @@ const formatDate = (dateString: string): string => {
 export default function DataSourcesPage() {
   const [dataSources, setDataSources] = useState<DataSource[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [dataSourceToDelete, setDataSourceToDelete] = useState<DataSource | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -45,18 +58,27 @@ export default function DataSourcesPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this data source? This action cannot be undone.")) {
-      return
-    }
+  const handleDeleteClick = (dataSource: DataSource) => {
+    setDataSourceToDelete(dataSource)
+    setShowDeleteDialog(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!dataSourceToDelete) return
 
     try {
-      await deleteDataSource(id)
+      setIsDeleting(true)
+      await deleteDataSource(dataSourceToDelete.id)
       // Refresh the list after deletion
       await fetchDataSources()
+      setShowDeleteDialog(false)
+      setDataSourceToDelete(null)
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to delete data source")
+      setError(err instanceof Error ? err.message : "Failed to delete data source")
       console.error("Error deleting data source:", err)
+      setShowDeleteDialog(false)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -152,7 +174,8 @@ export default function DataSourcesPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(dataSource.id)}
+                      onClick={() => handleDeleteClick(dataSource)}
+                      disabled={isDeleting}
                       className="gap-2 bg-transparent hover:border-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -165,6 +188,29 @@ export default function DataSourcesPage() {
           </div>
         )}
       </main>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Data Source</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{dataSourceToDelete?.collectionName}"? This action cannot be undone and will remove all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

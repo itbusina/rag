@@ -2,6 +2,7 @@ using core;
 using core.Data;
 using core.Storage;
 using core.Storage.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints
 {
@@ -35,13 +36,34 @@ namespace api.Endpoints
                 await context.SaveChangesAsync();
 
                 return Results.Ok(collectionNames);
-            }).WithName("AddDataSources");
+            })
+            .WithName("AddDataSources");
 
-            app.MapGet("/datasources", (HttpRequest request, DataStorageContext context) =>
+            app.MapGet("/datasources", (DataStorageContext context) =>
             {
-                var sources = context.DataSources.ToList();
-                return Results.Ok(sources);
-            }).WithName("ListDataSources");
+                var dataSources = context.DataSources.ToList();
+                return Results.Ok(dataSources);
+            })
+            .WithName("ListDataSources");
+
+            app.MapDelete("/datasources/{id:guid}", async (Guid id, DataStorageContext context) =>
+            {
+                var dataSource = await context.DataSources
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (dataSource == null)
+                    return Results.NotFound();
+
+                // First delete the collection from vector storage
+                await client.DeleteCollection(dataSource.CollectionName);
+
+                // Remove the data source from app storage
+                context.DataSources.Remove(dataSource);
+                await context.SaveChangesAsync();
+
+                return Results.Ok();
+            })
+            .WithName("DeleteDataSource");
         }
     }
 }

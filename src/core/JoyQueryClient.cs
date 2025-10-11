@@ -55,5 +55,10 @@ namespace core
 
             return summary;
         }
+
+        public async Task DeleteCollection(string collectionName)
+        {
+            await _vectorStorage.DeleteCollectionAsync(collectionName);
+        }
     }
 }

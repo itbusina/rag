@@ -19,6 +19,11 @@ namespace core.VectorStorage
                     });
         }
 
+        public async Task DeleteCollectionAsync(string collectionName)
+        {
+            await _client.DeleteCollectionAsync(collectionName);
+        }
+
         public async Task InsertAsync(string collectionName, List<Chunk> chunks)
         {
             var points = chunks.Select(chunk =>
