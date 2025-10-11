@@ -53,6 +53,62 @@ namespace api.Endpoints
             })
             .WithName("CreateAssistant");
 
+            app.MapDelete("/assistants/{id:guid}", async (Guid id, DataStorageContext context) =>
+            {
+                var assistant = context.Assistants.FirstOrDefault(x => x.Id == id);
+                if (assistant == null)
+                    return Results.NotFound();
+
+                context.Assistants.Remove(assistant);
+                await context.SaveChangesAsync();
+
+                return Results.Ok();
+            })
+            .WithName("DeleteAssistant");
+
+            app.MapGet("/assistants/{id:guid}", async (Guid id, DataStorageContext context) =>
+            {
+                var assistant = context.Assistants
+                    .Include(x => x.DataSources)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.Name,
+                        DataSources = x.DataSources.Select(ds => ds.Id).ToList()
+                    })
+                    .FirstOrDefault(x => x.Id == id);
+                
+                if (assistant == null)
+                    return Results.NotFound();
+
+                return Results.Ok(assistant);
+            })
+            .WithName("GetAssistant");
+
+            app.MapPut("/assistants/{id:guid}", async (Guid id, [FromBody]AssistantRequest request, DataStorageContext context) =>
+            {
+                var assistant = context.Assistants
+                    .Include(x => x.DataSources)
+                    .FirstOrDefault(x => x.Id == id);
+                
+                if (assistant == null)
+                    return Results.NotFound();
+
+                assistant.Name = request.Name;
+
+                // Update data sources
+                var searchList = request.DataSources.Select(x => Guid.Parse(x)).ToList();
+                var dataSources = context.DataSources
+                    .Where(x => searchList.Any(s => s == x.Id))
+                    .ToList();
+
+                assistant.DataSources = dataSources;
+
+                await context.SaveChangesAsync();
+
+                return Results.Ok();
+            })
+            .WithName("UpdateAssistant");
 
             app.MapPost("/assistants/all", async ([FromBody] string input, DataStorageContext context) =>
             {
