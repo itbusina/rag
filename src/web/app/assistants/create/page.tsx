@@ -163,18 +163,19 @@ export default function CreateAssistantPage() {
                   <div className="max-h-[300px] overflow-y-auto border border-border">
                     <div className="space-y-3 p-3">
                       {dataSources.map((dataSource) => (
-                        <div
+                        <label
                           key={dataSource.id}
+                          htmlFor={`ds-${dataSource.id}`}
                           className="flex items-start gap-3 p-4 border border-border bg-background hover:bg-secondary/50 transition-colors cursor-pointer"
-                          onClick={() => !isSubmitting && toggleDataSource(dataSource.id)}
                         >
                           <Checkbox
                             id={`ds-${dataSource.id}`}
                             checked={selectedDataSources.includes(dataSource.id)}
+                            onCheckedChange={() => !isSubmitting && toggleDataSource(dataSource.id)}
                             disabled={isSubmitting}
                             className="mt-1"
                           />
-                          <div className="flex-1">
+                          <div className="flex-1 pointer-events-none">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-medium text-foreground">
                                 {dataSource.collectionName}
@@ -185,7 +186,7 @@ export default function CreateAssistantPage() {
                             </div>
                             <p className="text-xs text-muted-foreground break-all">{dataSource.dataSourceValue}</p>
                           </div>
-                        </div>
+                        </label>
                       ))}
                     </div>
                   </div>
