@@ -28,8 +28,7 @@ class Program
             llmEndpoint: Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT") ?? "http://localhost:11434",
             embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
             summarizingModel: Environment.GetEnvironmentVariable("LLM_MODEL") ?? "llama3.1:8b",
-            qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "localhost",
-            qdrantPort: int.TryParse(Environment.GetEnvironmentVariable("QDRANT_PORT"), out var port) ? port : 6334
+            qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:63334"
         );
 
         var collectionName = Guid.TryParse(source, out _)

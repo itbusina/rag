@@ -54,8 +54,7 @@ var joyQueryClient = new JoyQueryClient(
     llmEndpoint: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434",
     embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
     summarizingModel: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
-    qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "localhost",
-    qdrantPort: int.TryParse(Environment.GetEnvironmentVariable("QDRANT_PORT"), out var port) ? port : 6334
+    qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:6334"
 );
 
 app.InitDataSourcesEndpoints(joyQueryClient);

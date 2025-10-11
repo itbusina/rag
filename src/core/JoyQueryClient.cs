@@ -5,9 +5,9 @@ using core.VectorStorage;
 
 namespace core
 {
-    public class JoyQueryClient(string llmEndpoint, string embeddingModel, string summarizingModel, string qdrantEndpoint, int qdrantPort)
+    public class JoyQueryClient(string llmEndpoint, string embeddingModel, string summarizingModel, string qdrantEndpoint)
     {
-        private readonly IVectorStorage _vectorStorage = new QdrantVectorStorage(qdrantEndpoint, qdrantPort);
+        private readonly IVectorStorage _vectorStorage = new QdrantVectorStorage(qdrantEndpoint);
         private readonly IEmbedder _embedder = new OllamaEmbedder(embeddingModel, llmEndpoint);
         private readonly ISummarizer _summarizer = new OllamaSummarizer(summarizingModel, llmEndpoint);
 
