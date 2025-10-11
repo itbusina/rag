@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "build:deploy": "npm run build && rm -rf ../api/wwwroot/* && cp -r out/* ../api/wwwroot/",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"
