@@ -43,12 +43,6 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Link href="/data-sources">
-                <Button variant="outline" className="gap-2">
-                  <Database className="h-4 w-4" />
-                  Data Sources
-                </Button>
-              </Link>
               <Link href="/assistants/create">
                 <Button className="gap-2">
                   <Plus className="h-4 w-4" />
