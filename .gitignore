@@ -420,3 +420,6 @@ FodyWeavers.xsd
 # Custom
 *.Development.json
 *.db*
+package-lock.json
+pnpm-lock.yaml
+.next
