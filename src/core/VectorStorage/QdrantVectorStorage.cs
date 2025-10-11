@@ -30,8 +30,8 @@ namespace core.VectorStorage
                     Payload =
                     {
                         ["text"] = chunk.Content,
-                        ["source_type"] = chunk.SourceType.ToString(),
-                        ["source_value"] = chunk.SourceValue
+                        ["source_type"] = chunk.Type.ToString(),
+                        ["source_value"] = chunk.Value
                     }
                 };
 
@@ -47,16 +47,26 @@ namespace core.VectorStorage
             var updateResult = await _client.UpsertAsync(collectionName, points);
         }
 
-        public async Task<IEnumerable<Chunk>> SearchAsync(string collectionName, float[] query, ulong limit = 3)
+        public async Task<IEnumerable<Chunk>> SearchAsync(List<string> collections, float[] query, int limit = 3)
         {
-            var points = await _client.SearchAsync(collectionName, query, limit: limit);
-
-            return [.. points.Select(p => new Chunk
+            var results = new List<ScoredPoint>();
+            foreach (var collection in collections)
             {
-                Content = p.Payload["text"].ToString() ?? string.Empty,
-                SourceType = Enum.Parse<SourceType>(p.Payload["source_type"].ToString() ?? string.Empty),
-                SourceValue = p.Payload["source_value"].ToString() ?? string.Empty,
-                Metadata = p.Payload.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.ToString())).ToDictionary()
+                var result = await _client.SearchAsync(collection, query, limit: (ulong)limit);
+                results.AddRange(result);
+            }
+
+            var topResults = results
+                .OrderByDescending(x => x.Score)
+                .Take(limit)
+                .ToList();
+
+            return [.. topResults.Select(p => new Chunk
+            {
+                Content = p.Payload["text"].StringValue ?? string.Empty,
+                Type = Enum.Parse<DataSourceType>(p.Payload["source_type"].StringValue ?? string.Empty),
+                Value = p.Payload["source_value"].StringValue ?? string.Empty,
+                Metadata = p.Payload.Select(x => new KeyValuePair<string, string>(x.Key, x.Value.StringValue)).ToDictionary()
             })];
         }
     }

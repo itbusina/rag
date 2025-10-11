@@ -142,8 +142,8 @@ namespace core.Data
             var chunkTasks = textChunks.Select(async content => new Chunk
             {
                 Content = content,
-                SourceType = SourceType.Stream,
-                SourceValue = _filename,
+                Type = DataSourceType.Stream,
+                Value = _filename,
                 Embedding = await embedder.GetEmbedding(content),
                 Metadata = new Dictionary<string, string>
                 {

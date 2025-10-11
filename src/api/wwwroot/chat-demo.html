@@ -41,7 +41,7 @@
     <div class="info-box">
         <h2>How to use:</h2>
         <ol>
-            <li>First, create an assistant by making a POST request to <code>/assistant</code></li>
+            <li>First, create an assistant by making a POST request to <code>/assistants</code></li>
             <li>Copy the returned assistant ID</li>
             <li>Replace <code>YOUR_ASSISTANT_ID</code> in the script tag below with your actual assistant ID</li>
             <li>The chat widget will appear in the bottom-right corner</li>
@@ -50,7 +50,7 @@
 
     <h2>Example Usage:</h2>
     <pre><code>&lt;!-- Add this script tag to any HTML page --&gt;
-&lt;script src="https://localhost:5001/assistant/YOUR_ASSISTANT_ID/chat.js"&gt;&lt;/script&gt;</code></pre>
+&lt;script src="https://localhost:5001/assistants/YOUR_ASSISTANT_ID/chat.js"&gt;&lt;/script&gt;</code></pre>
 
     <h2>Demo Content:</h2>
     <p>
@@ -77,8 +77,8 @@
 
     <!-- 
         IMPORTANT: Replace YOUR_ASSISTANT_ID with your actual assistant ID
-        Example: <script src="https://localhost:5001/assistant/12345678-1234-1234-1234-123456789abc/chat.js"></script>
+        Example: <script src="https://localhost:5001/assistants/12345678-1234-1234-1234-123456789abc/chat.js"></script>
     -->
-    <script src="http://localhost:5067/assistant/b111aa0c-c826-499c-a020-652169c39a97/chat.js"></script>
+    <script src="http://localhost:5067/assistants/b111aa0c-c826-499c-a020-652169c39a97/chat.js"></script>
 </body>
 </html>

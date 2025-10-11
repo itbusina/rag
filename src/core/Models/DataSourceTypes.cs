@@ -1,6 +1,6 @@
 namespace core.Models
 {
-    public enum SourceType
+    public enum DataSourceType
     {
         Stream,
         File,

@@ -281,7 +281,7 @@
             addLoadingIndicator();
             
             try {
-                const response = await fetch(`${API_BASE_URL}/assistant/${ASSISTANT_ID}`, {
+                const response = await fetch(`${API_BASE_URL}/assistants/${ASSISTANT_ID}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

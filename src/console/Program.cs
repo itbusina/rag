@@ -47,7 +47,7 @@ class Program
                 break;
             }
 
-            var summary = await joyQueryClient.QueryAsync(collectionName, input);
+            var summary = await joyQueryClient.QueryAsync([collectionName], input);
 
             Console.WriteLine(summary);
         }

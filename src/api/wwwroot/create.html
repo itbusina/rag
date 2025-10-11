@@ -284,7 +284,7 @@
             uploadButton.disabled = true;
             
             try {
-                const response = await fetch('/files', {
+                const response = await fetch('/datasources', {
                     method: 'POST',
                     body: formData
                 });

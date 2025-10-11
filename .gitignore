@@ -419,3 +419,4 @@ FodyWeavers.xsd
 
 # Custom
 *.Development.json
+*.db*

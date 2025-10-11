@@ -42,23 +42,18 @@ namespace core
             return collectionName;
         }
 
-        public async Task<string> QueryAsync(string collectionName, string question)
+        public async Task<string> QueryAsync(List<string> collections, string question)
         {
             // Step 4. Convert query to embedding
             var query = await _embedder.GetEmbedding(question);
 
-            // Step 5. Retrieve top-k chunks from vector storage
-            var topChunks = await _vectorStorage.SearchAsync(collectionName, query);
+            // Step 5. Retrieve top-k chunks from vector storage for each collection
+            var topChunks = await _vectorStorage.SearchAsync(collections, query);
 
             // Step 6: Summarize the answer
             var summary = await _summarizer.SummarizeAsync(question, [.. topChunks]);
 
             return summary;
-        }
-
-        public async Task<List<(string, string, string)>> ListDataSources()
-        {
-            throw new NotImplementedException();
         }
     }
 }

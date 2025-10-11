@@ -109,8 +109,8 @@ namespace core.Data
                 var chunk = new Chunk
                 {
                     Content = text,
-                    SourceType = SourceType.File,
-                    SourceValue = _filePath,
+                    Type = DataSourceType.File,
+                    Value = _filePath,
                     Embedding = await embedder.GetEmbedding(text),
                     Metadata = new Dictionary<string, string>
                     {

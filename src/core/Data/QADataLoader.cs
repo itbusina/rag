@@ -58,8 +58,8 @@ namespace core.Data
                 var chunk = new Chunk
                 {
                     Content = qaPair,
-                    SourceType = SourceType.File,
-                    SourceValue = _filePath,
+                    Type = DataSourceType.File,
+                    Value = _filePath,
                     Embedding = await embedder.GetEmbedding(qaPair),
                     Metadata = new Dictionary<string, string>
                     {
