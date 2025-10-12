@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: src/api/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      ollama:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    environment:
+      - LLM_ENDPOINT=http://ollama:11434
+      - QDRANT_ENDPOINT=http://qdrant:6334
+    ports:
+      - "8080:8080"
+    volumes:
+      - rag-data:/app/.storage
+    networks:
+      - ai-net
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+      - ./ollama-init.sh:/ollama-init.sh
+    entrypoint: ["/bin/bash", "/ollama-init.sh"]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - ai-net
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - ai-net
+
+volumes:
+  ollama-data:
+  qdrant-data:
+  rag-data:
+
+networks:
+  ai-net:
+    driver: bridge

@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/node_modules/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# Documentation
+*.md
+!src/web/README.md
+
+# Scripts
+*.sh
+!ollama-init.sh
+
+# Files directory (if you don't need it in the image)
+files/
+
