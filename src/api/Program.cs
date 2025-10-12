@@ -11,7 +11,7 @@ builder.Services.AddOpenApi();
 
 // Register EF Core + SQLite
 builder.Services.AddDbContext<DataStorageContext>(options =>
-    options.UseSqlite("Data Source=rag.db"));
+    options.UseSqlite("Data Source=.storage/rag.db"));
 
 // Add CORS services
 // builder.Services.AddCors(options =>

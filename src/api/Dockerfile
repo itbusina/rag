@@ -1,6 +1,10 @@
 # Stage 1: Build Next.js frontend
 FROM node:24-alpine AS frontend-builder
 
+# Define build argument for API URL
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
 WORKDIR /app/web
 
 # Copy package files
@@ -41,7 +45,7 @@ COPY --from=frontend-builder /app/web/out/ ./api/wwwroot/
 RUN dotnet publish ./api/api.csproj -c Release -o /app/publish
 
 # Stage 3: Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0.1-alpine3.21 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS runtime
 
 WORKDIR /app
 
