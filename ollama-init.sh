@@ -18,11 +18,11 @@ done
 echo "Ollama server is ready!"
 
 # Pull required models
-echo "Pulling nomic-embed-text model..."
-ollama pull nomic-embed-text
+echo "Pulling embedding model: $EMBEDDING_MODEL..."
+ollama pull "$EMBEDDING_MODEL"
 
-echo "Pulling llama3.1:8b model..."
-ollama pull llama3.1:8b
+echo "Pulling summarizing model: $SUMMARIZING_MODEL..."
+ollama pull "$SUMMARIZING_MODEL"
 
 echo "All models downloaded successfully!"
 echo "Ollama is ready to serve requests."

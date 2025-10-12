@@ -13,6 +13,8 @@ services:
     environment:
       - LLM_ENDPOINT=http://ollama:11434
       - QDRANT_ENDPOINT=http://qdrant:6334
+      - EMBEDDING_MODEL=nomic-embed-text
+      - SUMMARIZING_MODEL=llama3.2:1b
     ports:
       - "8080:8080"
     volumes:
@@ -28,6 +30,9 @@ services:
       - ollama-data:/root/.ollama
       - ./ollama-init.sh:/ollama-init.sh
     entrypoint: ["/bin/bash", "/ollama-init.sh"]
+    environment:
+      - EMBEDDING_MODEL=nomic-embed-text
+      - SUMMARIZING_MODEL=llama3.2:1b
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 10s
