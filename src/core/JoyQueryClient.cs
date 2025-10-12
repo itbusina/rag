@@ -1,5 +1,6 @@
 using core.Data;
 using core.Embeddings;
+using core.Helpers;
 using core.Summarization;
 using core.VectorStorage;
 
@@ -48,10 +49,10 @@ namespace core
             var query = await _embedder.GetEmbedding(question);
 
             // Step 5. Retrieve top-k chunks from vector storage for each collection
-            var topChunks = await _vectorStorage.SearchAsync(collections, query);
+            var topChunks = await Monitoring.Log(() => _vectorStorage.SearchAsync(collections, query), "_vectorStorage.SearchAsync(collections, query)");
 
             // Step 6: Summarize the answer
-            var summary = await _summarizer.SummarizeAsync(question, [.. topChunks]);
+            var summary = await Monitoring.Log(() => _summarizer.SummarizeAsync(question, [.. topChunks]), "_summarizer.SummarizeAsync(question, [.. topChunks]");
 
             return summary;
         }
