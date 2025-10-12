@@ -13,6 +13,7 @@ import { ArrowLeft, Upload, X, Loader2 } from "lucide-react"
 
 export default function CreateDataSourcePage() {
   const router = useRouter()
+  const [name, setName] = useState("")
   const [files, setFiles] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -31,6 +32,11 @@ export default function CreateDataSourcePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!name.trim()) {
+      setError("Please enter a name for the data source")
+      return
+    }
+    
     if (files.length === 0) {
       setError("Please select at least one file")
       return
@@ -42,7 +48,7 @@ export default function CreateDataSourcePage() {
       setUploadProgress("Uploading files...")
 
       const { createDataSources } = await import("@/lib/api")
-      const result = await createDataSources(files)
+      const result = await createDataSources(files, name)
       console.log("Data sources created:", result)
       
       setUploadProgress("Processing complete!")
@@ -83,6 +89,24 @@ export default function CreateDataSourcePage() {
       <main className="container mx-auto px-6 py-8 max-w-3xl">
         <Card className="p-8 border border-border bg-card">
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Name Input */}
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                Data Source Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="e.g., Product Documentation"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                disabled={isSubmitting}
+                className="bg-background border-border text-foreground"
+              />
+              <p className="text-xs text-muted-foreground">Choose a descriptive name for your data source</p>
+            </div>
+
             {/* File Upload */}
             <div className="space-y-2">
               <Label htmlFor="files" className="text-sm font-medium text-foreground">
@@ -165,7 +189,7 @@ export default function CreateDataSourcePage() {
               <Button 
                 type="submit" 
                 className="flex-1 gap-2" 
-                disabled={files.length === 0 || isSubmitting}
+                disabled={!name.trim() || files.length === 0 || isSubmitting}
               >
                 {isSubmitting && <Loader2 className="h-4 w-4 animate-spin" />}
                 {isSubmitting ? "Creating..." : "Create Data Source"}

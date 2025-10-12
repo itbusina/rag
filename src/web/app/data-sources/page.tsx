@@ -152,7 +152,7 @@ export default function DataSourcesPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="text-lg font-mono font-semibold text-foreground">
-                        {dataSource.collectionName}
+                        {dataSource.name}
                       </h3>
                       <span className="text-xs font-mono px-2 py-1 bg-primary/10 text-primary border border-primary/20">
                         {getDataSourceTypeLabel(dataSource.dataSourceType)}
@@ -195,7 +195,7 @@ export default function DataSourcesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Data Source</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{dataSourceToDelete?.collectionName}"? This action cannot be undone and will remove all associated data.
+              Are you sure you want to delete "{dataSourceToDelete?.name}"? This action cannot be undone and will remove all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

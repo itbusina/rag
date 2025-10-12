@@ -7,6 +7,7 @@ namespace core.Storage.Models
     {
         [Key]
         public Guid Id { get; set; }
+        public required string Name{ get; set; }
         public required DataSourceType DataSourceType { get; set; }
         public required string DataSourceValue { get; set; }
         public required DateTime CreatedDate { get; set; }

@@ -16,6 +16,7 @@ export enum DataSourceType {
 
 export interface DataSource {
   id: string
+  name: string
   dataSourceType: DataSourceType
   dataSourceValue: string
   createdDate: string
@@ -54,11 +55,12 @@ export class DataSourcesApiClient {
   /**
    * Upload files to create data sources
    */
-  async create(files: File[]): Promise<string[]> {
+  async create(files: File[], name: string): Promise<string[]> {
     const formData = new FormData()
     files.forEach((file) => {
       formData.append("files", file)
     })
+    formData.append("name", name)
 
     const response = await fetch(`${this.baseUrl}/datasources`, {
       method: "POST",
@@ -92,7 +94,7 @@ export const dataSourcesApi = new DataSourcesApiClient()
 // Export convenience functions
 export const getDataSources = () => dataSourcesApi.getAll()
 export const getDataSource = (id: string) => dataSourcesApi.getById(id)
-export const createDataSources = (files: File[]) => dataSourcesApi.create(files)
+export const createDataSources = (files: File[], name: string) => dataSourcesApi.create(files, name)
 export const deleteDataSource = (id: string) => dataSourcesApi.delete(id)
 
 // Helper function to get data source type label

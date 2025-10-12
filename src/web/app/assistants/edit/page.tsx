@@ -288,7 +288,7 @@ function EditPageContent() {
                           <div className="flex-1 pointer-events-none">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-medium text-foreground">
-                                {dataSource.collectionName}
+                                {dataSource.name}
                               </span>
                               <span className="text-xs font-mono px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
                                 {getDataSourceTypeLabel(dataSource.dataSourceType)}

@@ -14,6 +14,12 @@ namespace api.Endpoints
             {
                 var form = await request.ReadFormAsync();
                 var collectionNames = new List<string>();
+                var name = form["name"].ToString();
+
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return Results.BadRequest("Name is required");
+                }
 
                 foreach (var file in form.Files)
                 {
@@ -26,6 +32,7 @@ namespace api.Endpoints
 
                     context.DataSources.Add(new DataSource
                     {
+                        Name = name,
                         CollectionName = collectionName,
                         DataSourceType = core.Models.DataSourceType.Stream,
                         DataSourceValue = file.FileName,
