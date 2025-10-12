@@ -41,7 +41,7 @@ namespace core.Embeddings
                 }
 
                 // Convert double[] to float[]
-                return result.Embedding.Select(d => (float)d).ToArray();
+                return [.. result.Embedding.Select(d => (float)d)];
             }
             catch (HttpRequestException ex)
             {
