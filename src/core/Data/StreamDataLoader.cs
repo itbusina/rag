@@ -135,7 +135,7 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var textChunks = TextChunker.ChunkText(_content, maxTokens: 200, overlap: 50);
+            var textChunks = TextChunker.ChunkText(_content, maxSentences: 5, overlap: 1);
 
             Console.WriteLine($"Created {textChunks.Count} chunks from file content.");
             

@@ -4,26 +4,27 @@ namespace core.Data
 {
     public static class TextChunker
     {
-        public static List<string> ChunkText(string text, int maxTokens, int overlap)
+        public static List<string> ChunkText(string text, int maxSentences = 5, int overlap = 1)
         {
             // Simple chunker based on sentence boundaries
-            var sentences = Regex.Split(text, @"(?<=[.!?])\s+");
-            var chunks = new List<string>();
+            var sentencesRegex = @"(?<=[.!?])\s+";
 
+            var sentences = Regex.Split(text, sentencesRegex);
+            var chunks = new List<string>();
             var current = new List<string>();
-            int tokenEstimate = 0;
+            int estimate = 0;
 
             foreach (var sentence in sentences)
             {
-                int tokens = sentence.Split(' ').Length; // rough token estimate
-                if (tokenEstimate + tokens > maxTokens)
+                if (estimate > maxSentences)
                 {
                     chunks.Add(string.Join(" ", current));
                     current.Clear();
-                    tokenEstimate = 0;
+                    estimate = 0;
                 }
+
                 current.Add(sentence);
-                tokenEstimate += tokens;
+                estimate += 1;
             }
 
             if (current.Count > 0)
@@ -32,8 +33,8 @@ namespace core.Data
             // Add overlapping context (optional)
             for (int i = 1; i < chunks.Count; i++)
             {
-                var overlapText = string.Join(" ", chunks[i - 1].Split(' ').TakeLast(overlap));
-                chunks[i] = overlapText + " " + chunks[i];
+                var overlapSentences = string.Join(" ", Regex.Split(chunks[i - 1], sentencesRegex).TakeLast(overlap));
+                chunks[i] = overlapSentences + " " + chunks[i];
             }
 
             return chunks;
