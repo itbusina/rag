@@ -154,7 +154,7 @@ namespace api.Endpoints
                 var baseUrl = $"{scheme}://{host}";
 
                 // Read the widget script template from file
-                var scriptPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", "js/widget.js");
+                var scriptPath = Path.Combine(app.Environment.ContentRootPath, "widget", "js/widget.js");
                 var scriptTemplate = await File.ReadAllTextAsync(scriptPath);
 
                 // Replace placeholders with actual values

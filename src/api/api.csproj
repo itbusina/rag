@@ -14,4 +14,8 @@
     <ProjectReference Include="../core/core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="widget\**" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
 </Project>
