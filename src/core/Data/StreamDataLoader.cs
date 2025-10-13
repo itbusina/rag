@@ -5,11 +5,13 @@ using UglyToad.PdfPig.Content;
 
 namespace core.Data
 {
-    public class StreamDataLoader(string filename, Stream fileStream) : IDataLoader
+    public class StreamDataLoader(string filename, Stream fileStream, int maxSentences = 5, int overlap = 1) : IDataLoader
     {
         private readonly string _filename = filename;
         private readonly Stream _fileStream = fileStream;
         private string _content = string.Empty;
+        private int _maxSentences = maxSentences;
+        private int _overlap = overlap;
 
         public async Task LoadAsync()
         {
@@ -54,7 +56,7 @@ namespace core.Data
         private async Task LoadTextFromStreamAsync()
         {
             Console.WriteLine($"Loading text file from stream: {_filename}");
-            
+
             // Reset stream position if possible
             if (_fileStream.CanSeek)
             {
@@ -135,27 +137,27 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var textChunks = TextChunker.ChunkText(_content, maxSentences: 5, overlap: 1);
+            var textChunks = TextChunker.ChunkText(_content, _maxSentences, _overlap);
+            var chunks = new List<Chunk>();
 
-            Console.WriteLine($"Created {textChunks.Count} chunks from file content.");
-            
-            var chunkTasks = textChunks.Select(async content => new Chunk
+            foreach (var text in textChunks)
             {
-                Content = content,
-                Type = DataSourceType.Stream,
-                Value = _filename,
-                Embedding = await embedder.GetEmbedding(content),
-                Metadata = new Dictionary<string, string>
+                var chunk = new Chunk
                 {
-                    { "file_name", _filename }
-                }
-            }).ToList();
+                    Content = text,
+                    Type = DataSourceType.Stream,
+                    Value = _filename,
+                    Embedding = await embedder.GetEmbedding(text),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "file_name", _filename }
+                    }
+                };
 
-            var chunks = await Task.WhenAll(chunkTasks);
+                chunks.Add(chunk);
+            }
 
-            Console.WriteLine($"Generated embeddings for all {chunks.Length} chunks.");
-
-            return [..chunks];
+            return chunks;
         }
     }
 }

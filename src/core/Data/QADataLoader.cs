@@ -51,8 +51,6 @@ namespace core.Data
 
             var chunks = new List<Chunk>();
 
-            Console.WriteLine($"Creating chunks from {_qaPairs.Count} Q&A pairs.");
-
             foreach (var qaPair in _qaPairs)
             {
                 var chunk = new Chunk
@@ -69,8 +67,6 @@ namespace core.Data
 
                 chunks.Add(chunk);
             }
-
-            Console.WriteLine($"Generated embeddings for all {chunks.Count} Q&A chunks.");
 
             return chunks;
         }

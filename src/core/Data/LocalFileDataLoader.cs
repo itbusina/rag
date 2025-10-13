@@ -98,10 +98,7 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var textChunks = TextChunker.ChunkText(_content, maxSentences: 5, overlap: 1);
-
-            Console.WriteLine($"Created {textChunks.Count} chunks from file content.");
-
+            var textChunks = TextChunker.ChunkText(_content);
             var chunks = new List<Chunk>();
 
             foreach (var text in textChunks)
@@ -120,8 +117,6 @@ namespace core.Data
 
                 chunks.Add(chunk);
             }
-
-            Console.WriteLine($"Generated embeddings for all {chunks.Count} chunks.");
 
             return chunks;
         }

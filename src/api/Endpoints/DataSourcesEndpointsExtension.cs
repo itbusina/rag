@@ -2,6 +2,7 @@ using core;
 using core.Data;
 using core.Storage;
 using core.Storage.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints
@@ -26,7 +27,7 @@ namespace api.Endpoints
                     if (file.Length == 0)
                         continue;
 
-                    var dataLoader = new StreamDataLoader(file.FileName, file.OpenReadStream());
+                    var dataLoader = new StreamDataLoader(file.FileName, file.OpenReadStream(), 2, 1);
                     var collectionName = await client.LoadDataAsync(dataLoader);
                     collectionNames.Add(collectionName);
 
@@ -44,6 +45,7 @@ namespace api.Endpoints
 
                 return Results.Ok(collectionNames);
             })
+            .WithMetadata(new RequestSizeLimitAttribute(100*1024*1024)) // 100 MB
             .WithName("AddDataSources");
 
             app.MapGet("/datasources", (DataStorageContext context) =>

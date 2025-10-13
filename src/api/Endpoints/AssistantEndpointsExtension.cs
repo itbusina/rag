@@ -12,7 +12,7 @@ namespace api.Endpoints
     {
         public static void InitAssistantEndpoints(this WebApplication app, JoyQueryClient client)
         {
-            app.MapGet("/assistants", async (DataStorageContext context) =>
+            app.MapGet("/assistants", (DataStorageContext context) =>
             {
                 var assistants = context.Assistants
                     .Include(x => x.DataSources)
@@ -116,7 +116,7 @@ namespace api.Endpoints
                     .Select(x => x.CollectionName)
                     .ToList();
 
-                var summary = await client.QueryAsync(collections, input);
+                var summary = await client.QueryAsync(collections, input, 3);
 
                 return Results.Ok(new
                 {
@@ -138,7 +138,7 @@ namespace api.Endpoints
                     .Select(x => x.CollectionName)
                     .ToList();
 
-                var summary = await client.QueryAsync(collections, input);
+                var summary = await client.QueryAsync(collections, input, 3);
 
                 return Results.Ok(new
                 {

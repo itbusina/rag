@@ -37,6 +37,8 @@ namespace core.Data
                 chunks[i] = overlapSentences + " " + chunks[i];
             }
 
+            Console.WriteLine($"{chunks.Count} chunks created.");
+            
             return chunks;
         }
     }

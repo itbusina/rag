@@ -174,23 +174,24 @@ namespace core.Data
                 throw new InvalidOperationException("No content loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            // Compute embeddings in parallel for all paragraphs
-            var chunkTasks = _paragraphs.Select(async paragraph => new Chunk
+            var chunks = new List<Chunk>();
+            foreach (var paragraph in _paragraphs)
             {
-                Content = paragraph,
-                Type = DataSourceType.Url,
-                Value = _url,
-                Embedding = await embedder.GetEmbedding(paragraph),
-                Metadata = new Dictionary<string, string>
+                var chunk = new Chunk
                 {
-                    { "source_url", _url }
-                }
-            }).ToList();
+                    Content = paragraph,
+                    Type = DataSourceType.Url,
+                    Value = _url,
+                    Embedding = await embedder.GetEmbedding(paragraph),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "source_url", _url }
+                    }
+                };
+                chunks.Add(chunk);
+            }
 
-            var chunks = await Task.WhenAll(chunkTasks);
-
-            Console.WriteLine($"Created {chunks.Length} chunks with embeddings.");
-            return [.. chunks];
+            return chunks;
         }
 
         public List<string> GetContentBlocks()

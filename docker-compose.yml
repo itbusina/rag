@@ -6,8 +6,8 @@ services:
       args:
         - NEXT_PUBLIC_API_URL=http://localhost:8080
     depends_on:
-      ollama:
-        condition: service_healthy
+      #ollama:
+      #  condition: service_healthy
       qdrant:
         condition: service_started
     environment:
@@ -22,25 +22,25 @@ services:
     networks:
       - ai-net
 
-  ollama:
-    image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-      - ./ollama-init.sh:/ollama-init.sh
-    entrypoint: ["/bin/bash", "/ollama-init.sh"]
-    environment:
-      - EMBEDDING_MODEL=nomic-embed-text
-      - SUMMARIZING_MODEL=llama3.1:8b
-    healthcheck:
-      test: ["CMD", "ollama", "list"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    networks:
-      - ai-net
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama-data:/root/.ollama
+  #     - ./ollama-init.sh:/ollama-init.sh
+  #   entrypoint: ["/bin/bash", "/ollama-init.sh"]
+  #   environment:
+  #     - EMBEDDING_MODEL=nomic-embed-text
+  #     - SUMMARIZING_MODEL=llama3.1:8b
+  #   healthcheck:
+  #     test: ["CMD", "ollama", "list"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 30s
+  #   networks:
+  #     - ai-net
 
   qdrant:
     image: qdrant/qdrant:latest

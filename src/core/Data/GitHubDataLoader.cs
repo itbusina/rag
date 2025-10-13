@@ -123,28 +123,30 @@ namespace core.Data
             {
                 throw new InvalidOperationException("No content loaded. Call Load() before GetContentChunks().");
             }
-
-            var chunks = _allComments.Select(async comment => new Chunk
+            var chunks = new List<Chunk>();
+            foreach (var comment in _allComments)
             {
-                Content = comment.CommitMessage,
-                Type = DataSourceType.GitHub,
-                Value = _repositoryUrl,
-                Embedding = await embedder.GetEmbedding(comment.CommitMessage),
-                Metadata = new Dictionary<string, string>
+                var chunk = new Chunk
                 {
-                    { "repository", comment.Repository },
-                    { "organization", comment.Organization },
-                    { "repository_url", comment.RepositoryUrl },
-                    { "commit_url", $"{comment.RepositoryUrl}/commit/{comment.CommitSha}" },
-                    { "commit_sha", comment.CommitSha },
-                    { "author", comment.Author },
-                    { "date", comment.Date.ToString("o") } // ISO 8601 format
-                }
-            }).ToList();
+                    Content = comment.CommitMessage,
+                    Type = DataSourceType.GitHub,
+                    Value = _repositoryUrl,
+                    Embedding = await embedder.GetEmbedding(comment.CommitMessage),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "repository", comment.Repository },
+                        { "organization", comment.Organization },
+                        { "repository_url", comment.RepositoryUrl },
+                        { "commit_url", $"{comment.RepositoryUrl}/commit/{comment.CommitSha}" },
+                        { "commit_sha", comment.CommitSha },
+                        { "author", comment.Author },
+                        { "date", comment.Date.ToString("o") } // ISO 8601 format
+                    }
+                };
+                chunks.Add(chunk);
+            }
 
-            await Task.WhenAll(chunks);
-
-            return [.. chunks.Select(t => t.Result)];
+            return chunks;
         }
     }
 }

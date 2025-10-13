@@ -15,13 +15,13 @@ namespace core.Data
             try
             {
                 Console.WriteLine($"Loading sitemap from: {_sitemapUrl}");
-                
+
                 // Download sitemap XML
                 var sitemapXml = await _httpClient.GetStringAsync(_sitemapUrl);
-                
+
                 // Parse sitemap and extract URLs
                 var urls = ParseSitemapUrls(sitemapXml);
-                
+
                 if (urls.Count == 0)
                 {
                     Console.WriteLine("No URLs found in the sitemap.");
@@ -74,13 +74,13 @@ namespace core.Data
             try
             {
                 var xdoc = XDocument.Parse(sitemapXml);
-                
+
                 // Handle sitemap namespace
                 XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
-                
+
                 // Try with namespace first
                 var urlElements = xdoc.Descendants(ns + "url").ToList();
-                
+
                 // If no elements found with namespace, try without namespace
                 if (urlElements.Count == 0)
                 {
@@ -91,7 +91,7 @@ namespace core.Data
                 {
                     // Try with namespace
                     var locElement = urlElement.Element(ns + "loc") ?? urlElement.Element("loc");
-                    
+
                     if (locElement != null && !string.IsNullOrWhiteSpace(locElement.Value))
                     {
                         urls.Add(locElement.Value.Trim());
@@ -108,7 +108,7 @@ namespace core.Data
                 if (sitemapElements.Count > 0)
                 {
                     Console.WriteLine($"Detected sitemap index with {sitemapElements.Count} sub-sitemaps.");
-                    
+
                     // This is a sitemap index, recursively load all sub-sitemaps
                     var subSitemapUrls = new List<string>();
                     foreach (var sitemapElement in sitemapElements)
@@ -137,7 +137,7 @@ namespace core.Data
                     }).ToList();
 
                     var subResults = Task.WhenAll(subSitemapTasks).GetAwaiter().GetResult();
-                    
+
                     // Aggregate all URLs from sub-sitemaps
                     foreach (var subUrls in subResults)
                     {
@@ -160,25 +160,26 @@ namespace core.Data
                 throw new InvalidOperationException("No content loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            Console.WriteLine($"Computing embeddings for {_allContentBlocks.Count} content blocks...");
-
-            // Compute embeddings in parallel for all content blocks
-            var chunkTasks = _allContentBlocks.Select(async content => new Chunk
+            var chunks = new List<Chunk>();
+            
+            foreach (var content in _allContentBlocks)
             {
-                Content = content.Item1,
-                Type = DataSourceType.Sitemap,
-                Value = _sitemapUrl,
-                Embedding = await embedder.GetEmbedding(content.Item1),
-                Metadata = new Dictionary<string, string>
+                var chunk = new Chunk
                 {
-                    { "source_url", content.Item2 }
-                }
-            }).ToList();
+                    Content = content.Item1,
+                    Type = DataSourceType.Sitemap,
+                    Value = _sitemapUrl,
+                    Embedding = await embedder.GetEmbedding(content.Item1),
+                    Metadata = new Dictionary<string, string>
+                    {
+                        { "source_url", content.Item2 }
+                    }
+                };
 
-            var chunks = await Task.WhenAll(chunkTasks);
+                chunks.Add(chunk);
+            }
 
-            Console.WriteLine($"Created {chunks.Length} chunks with embeddings.");
-            return [.. chunks];
+            return chunks;
         }
     }
 }

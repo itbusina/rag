@@ -33,23 +33,27 @@ namespace core
             await dataLoader.LoadAsync();
 
             // Step 2: Load chunks for data source
-            var chunks = await dataLoader.GetContentChunks(_embedder);
+            var chunks = await Monitoring.Log(() => dataLoader.GetContentChunks(_embedder), "dataLoader.GetContentChunks(_embedder)");
+
+            if (chunks.Count == 0)
+                throw new InvalidOperationException("No content chunks were loaded from the data source.");
 
             // Step 3: Store chunks in vector storage
             var collectionName = Guid.NewGuid().ToString();
-            await _vectorStorage.CreateCollectionAsync(collectionName, 768); // 768 is the dimension of the "nomic-embed-text" model
+            var vectorSize = (ulong)chunks.First().Embedding.Length;
+            await _vectorStorage.CreateCollectionAsync(collectionName, vectorSize);
             await _vectorStorage.InsertAsync(collectionName, chunks);
 
             return collectionName;
         }
 
-        public async Task<string> QueryAsync(List<string> collections, string question)
+        public async Task<string> QueryAsync(List<string> collections, string question, int limit = 3)
         {
             // Step 4. Convert query to embedding
             var query = await _embedder.GetEmbedding(question);
 
             // Step 5. Retrieve top-k chunks from vector storage for each collection
-            var topChunks = await Monitoring.Log(() => _vectorStorage.SearchAsync(collections, query), "_vectorStorage.SearchAsync(collections, query)");
+            var topChunks = await Monitoring.Log(() => _vectorStorage.SearchAsync(collections, query, limit), "_vectorStorage.SearchAsync(collections, query, limit)");
 
             // Step 6: Summarize the answer
             var summary = await Monitoring.Log(() => _summarizer.SummarizeAsync(question, [.. topChunks]), "_summarizer.SummarizeAsync(question, [.. topChunks]");
