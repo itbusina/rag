@@ -14,15 +14,15 @@ builder.Services.AddDbContext<DataStorageContext>(options =>
     options.UseSqlite("Data Source=.storage/rag.db"));
 
 // Add CORS services
-// builder.Services.AddCors(options =>
-// {
-//     options.AddDefaultPolicy(policy =>
-//     {
-//         policy.AllowAnyOrigin()
-//               .AllowAnyMethod()
-//               .AllowAnyHeader();
-//     });
-// });
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -45,7 +45,7 @@ app.UseDefaultFiles(); // serves index.html automatically
 app.UseStaticFiles();
 
 // Enable CORS
-//app.UseCors();
+app.UseCors();
 
 app.UseHttpsRedirection();
 
