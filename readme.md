@@ -19,6 +19,17 @@ The application will be available at: http://localhost:8080
 
 **Note:** The first startup will take longer as Ollama downloads the required models (~4-5GB).
 
+### macOS Users - Important Performance Note
+
+If you are using macOS, it is **recommended to run Ollama locally** and point the RAG application to this local instance instead of running Ollama in Docker. This is due to performance constraints of running Ollama in Docker on Mac.
+
+To connect the RAG application running in Docker to your local Ollama instance:
+
+1. Install and run Ollama locally (see Manual Setup section below)
+2. Update the Ollama URL in the API configuration to: `http://host.docker.internal:11434`
+
+This setup provides significantly better performance for embeddings and model inference on macOS.
+
 ### Stopping the services
 ```bash
 docker-compose down
@@ -74,7 +85,9 @@ Open 'Create Assistant' page, add data sources and create the assistant.
 ### Step 6: Chat with assistant
 Open the chat for the assistant and start searching across the data sources.
 
+---
 
+## License
 
-
+This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
 

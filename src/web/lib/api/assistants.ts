@@ -51,8 +51,16 @@ export class AssistantsApiClient {
    * Get a single assistant by ID
    */
   async getById(id: string): Promise<Assistant | null> {
-    const assistants = await this.getAll()
-    return assistants.find((a) => a.id === id) || null
+    const response = await fetch(`${this.baseUrl}/assistants/${id}`)
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null
+      }
+      throw new Error(`Failed to fetch assistant: ${response.statusText}`)
+    }
+    
+    return response.json()
   }
 
   /**
