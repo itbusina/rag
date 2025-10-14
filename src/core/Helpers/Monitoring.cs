@@ -6,6 +6,20 @@ namespace core.Helpers
     {
         public static async Task<T> Log<T>(Func<Task<T>> action, string actionDescription)
         {
+            return await ExecuteWithLogging(action, actionDescription);
+        }
+
+        public static async Task Log(Func<Task> action, string actionDescription)
+        {
+            await ExecuteWithLogging(async () =>
+            {
+                await action();
+                return 0; // Dummy return value
+            }, actionDescription);
+        }
+
+        private static async Task<T> ExecuteWithLogging<T>(Func<Task<T>> action, string actionDescription)
+        {
             var stopwatch = Stopwatch.StartNew();
             try
             {

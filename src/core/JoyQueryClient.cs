@@ -30,7 +30,7 @@ namespace core
         public async Task<string> LoadDataAsync(IDataLoader dataLoader)
         {
             // Step 1. Load file content
-            await dataLoader.LoadAsync();
+            await Monitoring.Log(() => dataLoader.LoadAsync(), "dataLoader.LoadAsync()");
 
             // Step 2: Load chunks for data source
             var chunks = await Monitoring.Log(() => dataLoader.GetContentChunks(_embedder), "dataLoader.GetContentChunks(_embedder)");
