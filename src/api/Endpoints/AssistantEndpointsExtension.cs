@@ -10,7 +10,7 @@ namespace api.Endpoints
     
     public static class AssistantEndpointsExtension
     {
-        public static void InitAssistantEndpoints(this WebApplication app, JoyQueryClient client)
+        public static void InitAssistantEndpoints(this WebApplication app)
         {
             app.MapGet("/assistants", (DataStorageContext context) =>
             {
@@ -110,7 +110,7 @@ namespace api.Endpoints
             })
             .WithName("UpdateAssistant");
 
-            app.MapPost("/assistants/all", async ([FromBody] string input, DataStorageContext context) =>
+            app.MapPost("/assistants/all", async ([FromBody] string input, JoyQueryClient client, DataStorageContext context) =>
             {
                 var collections = context.DataSources
                     .Select(x => x.CollectionName)
@@ -125,7 +125,7 @@ namespace api.Endpoints
             })
             .WithName("QueryAllAssistant");
 
-            app.MapPost("/assistants/{id:guid}", async (Guid id, [FromBody] string input, DataStorageContext context) =>
+            app.MapPost("/assistants/{id:guid}", async (Guid id, [FromBody] string input, JoyQueryClient client, DataStorageContext context) =>
             {
                 var assistant = context.Assistants
                     .Include(x => x.DataSources)

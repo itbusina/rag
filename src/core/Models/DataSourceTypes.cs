@@ -7,5 +7,6 @@ namespace core.Models
         GitHub,
         Url,
         Sitemap,
+        Confluence,
     }
 }
