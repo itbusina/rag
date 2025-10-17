@@ -119,6 +119,11 @@ export default function DataSourcesPage() {
                       Add Confluence
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/data-sources/github/create" className="cursor-pointer">
+                      Add GitHub
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -169,6 +174,11 @@ export default function DataSourcesPage() {
                 <DropdownMenuItem asChild>
                   <Link href="/data-sources/confluence/create" className="cursor-pointer">
                     Add Confluence
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/data-sources/github/create" className="cursor-pointer">
+                    Add GitHub
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

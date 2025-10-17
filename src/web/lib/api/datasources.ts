@@ -103,6 +103,33 @@ export class DataSourcesApiClient {
   }
 
   /**
+   * Create a GitHub data source
+   */
+  async createGitHub(params: {
+    name: string
+    repositoryUrl: string
+    accessToken?: string
+  }): Promise<string> {
+    const formData = new FormData()
+    formData.append("name", params.name)
+    formData.append("url", params.repositoryUrl)
+    if (params.accessToken) {
+      formData.append("token", params.accessToken)
+    }
+
+    const response = await fetch(`${this.baseUrl}/datasources?type=github`, {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to create GitHub data source: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
    * Delete a data source
    */
   async delete(id: string): Promise<void> {
@@ -129,6 +156,11 @@ export const createConfluenceDataSource = (params: {
   personalToken: string
   parentUrl: string
 }) => dataSourcesApi.createConfluence(params)
+export const createGitHubDataSource = (params: {
+  name: string
+  repositoryUrl: string
+  accessToken?: string
+}) => dataSourcesApi.createGitHub(params)
 export const deleteDataSource = (id: string) => dataSourcesApi.delete(id)
 
 // Helper function to get data source type label

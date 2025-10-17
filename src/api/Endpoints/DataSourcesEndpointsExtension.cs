@@ -24,6 +24,7 @@ namespace api.Endpoints
                 {
                     "file" => await service.AddFileDataSourceAsync(name, form.Files),
                     "confluence" => await service.AddConfluenceDataSourceAsync(name, form["url"].ToString(), form["token"].ToString(), form["parentPageId"].ToString()),
+                    "github" => await service.AddGitHubDataSourceAsync(name, form["url"].ToString(), form["token"].ToString()),
                     _ => throw new NotSupportedException($"Data source type '{type}' is not supported")
                 };
 

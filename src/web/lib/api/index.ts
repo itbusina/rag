@@ -27,6 +27,7 @@ export {
   getDataSource,
   createDataSources,
   createConfluenceDataSource,
+  createGitHubDataSource,
   deleteDataSource,
   getDataSourceTypeLabel,
   DataSourceType,

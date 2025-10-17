@@ -18,13 +18,15 @@ namespace core.Data
     public class GitHubDataLoader : IDataLoader
     {
         private readonly string _repositoryUrl;
+        private readonly string? _accessToken;
         private string _owner = string.Empty;
         private string _repoName = string.Empty;
         private readonly List<GitHubChunkMetadata> _allComments = [];
 
-        public GitHubDataLoader(string repositoryUrl)
+        public GitHubDataLoader(string repositoryUrl, string? accessToken = null)
         {
             _repositoryUrl = repositoryUrl;
+            _accessToken = accessToken;
             ParseRepositoryUrl();
         }
 
@@ -51,16 +53,16 @@ namespace core.Data
 
                 var client = new GitHubClient(new ProductHeaderValue("RAG-GitHub-App"));
 
-                // Check if GitHub token is available in environment
-                var githubToken = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+                // Prioritize constructor token, then check environment variable
+                var githubToken = _accessToken ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
                 if (!string.IsNullOrEmpty(githubToken))
                 {
                     client.Credentials = new Credentials(githubToken);
-                    Console.WriteLine("Using authenticated GitHub API access (higher rate limits)");
+                    Console.WriteLine("Using authenticated GitHub API access (supports private repositories and higher rate limits)");
                 }
                 else
                 {
-                    Console.WriteLine("Warning: No GITHUB_TOKEN found. Using unauthenticated access (lower rate limits)");
+                    Console.WriteLine("Warning: No GitHub token provided. Using unauthenticated access (public repositories only, lower rate limits)");
                 }
 
                 // Get all commits from the repository
@@ -107,7 +109,15 @@ namespace core.Data
             }
             catch (NotFoundException)
             {
-                Console.WriteLine($"Repository {_owner}/{_repoName} not found or is not public.");
+                Console.WriteLine($"Repository {_owner}/{_repoName} not found or access denied.");
+                Console.WriteLine("If this is a private repository, ensure you've provided a valid GitHub access token.");
+                throw;
+            }
+            catch (AuthorizationException)
+            {
+                Console.WriteLine($"Authorization failed for repository {_owner}/{_repoName}.");
+                Console.WriteLine("The provided token may be invalid or may not have the required permissions.");
+                Console.WriteLine("For private repositories, ensure your token has 'repo' scope.");
                 throw;
             }
             catch (Exception ex)
