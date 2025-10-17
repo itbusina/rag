@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Send, Bot, User, Loader2 } from "lucide-react"
 import { getAssistant, queryAssistant } from "@/lib/api"
+import { MarkdownContent } from "@/components/markdown-content"
 
 type Message = {
   id: string
@@ -155,7 +156,13 @@ function ChatPageContent() {
                       : "bg-card border-border"
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  {message.role === "assistant" ? (
+                    <div className="text-sm">
+                      <MarkdownContent content={message.content} />
+                    </div>
+                  ) : (
+                    <p className="text-sm leading-relaxed">{message.content}</p>
+                  )}
                   <p
                     className={`text-xs mt-2 font-mono ${
                       message.role === "user" ? "text-primary-foreground/70" : "text-muted-foreground"

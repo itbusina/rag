@@ -131,4 +131,46 @@
   [role="button"] {
     border-radius: 0 !important;
   }
+
+  /* Markdown content styles */
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose :where(code):not(:where([class~="not-prose"] *)) {
+    @apply bg-muted text-foreground px-1.5 py-0.5 rounded;
+  }
+
+  .prose :where(pre):not(:where([class~="not-prose"] *)) {
+    @apply bg-muted text-foreground;
+  }
+
+  .prose :where(pre code):not(:where([class~="not-prose"] *)) {
+    @apply bg-transparent p-0;
+  }
+
+  .prose :where(a):not(:where([class~="not-prose"] *)) {
+    @apply text-primary no-underline hover:underline;
+  }
+
+  .prose :where(blockquote):not(:where([class~="not-prose"] *)) {
+    @apply text-muted-foreground border-l-primary;
+  }
+
+  .prose :where(strong):not(:where([class~="not-prose"] *)) {
+    @apply text-foreground font-bold;
+  }
+
+  .prose :where(thead):not(:where([class~="not-prose"] *)) {
+    @apply border-border;
+  }
+
+  .prose :where(tbody tr):not(:where([class~="not-prose"] *)) {
+    @apply border-border;
+  }
+
+  /* Syntax highlighting adjustments for dark mode */
+  .dark .hljs {
+    @apply bg-muted;
+  }
 }
