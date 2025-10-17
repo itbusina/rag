@@ -1,7 +1,6 @@
+using api.Services;
 using core;
-using core.Data;
 using core.Storage;
-using core.Storage.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,39 +8,24 @@ namespace api.Endpoints
 {
     public static class DataSourcesEndpointsExtension
     {
-        public static void InitDataSourcesEndpoints(this WebApplication app, JoyQueryClient client)
+        public static void InitDataSourcesEndpoints(this WebApplication app)
         {
-            app.MapPost("/datasources", async (HttpRequest request, DataStorageContext context) =>
+            app.MapPost("/datasources", async ([FromQuery] string type, HttpRequest request, DataSourceService service, DataStorageContext context) =>
             {
                 var form = await request.ReadFormAsync();
-                var collectionNames = new List<string>();
                 var name = form["name"].ToString();
 
                 if (string.IsNullOrWhiteSpace(name))
                 {
-                    return Results.BadRequest("Name is required");
+                    return Results.BadRequest("Data source name is required");
                 }
 
-                foreach (var file in form.Files)
+                var collectionNames = type switch
                 {
-                    if (file.Length == 0)
-                        continue;
-
-                    var dataLoader = new StreamDataLoader(file.FileName, file.OpenReadStream(), 2, 1);
-                    var collectionName = await client.LoadDataAsync(dataLoader);
-                    collectionNames.Add(collectionName);
-
-                    context.DataSources.Add(new DataSource
-                    {
-                        Name = name,
-                        CollectionName = collectionName,
-                        DataSourceType = core.Models.DataSourceType.Stream,
-                        DataSourceValue = file.FileName,
-                        CreatedDate = DateTime.UtcNow
-                    });
-                }
-
-                await context.SaveChangesAsync();
+                    "file" => await service.AddFileDataSourceAsync(name, form.Files),
+                    "confluence" => await service.AddConfluenceDataSourceAsync(name, form["url"].ToString(), form["token"].ToString(), form["parentPageId"].ToString()),
+                    _ => throw new NotSupportedException($"Data source type '{type}' is not supported")
+                };
 
                 return Results.Ok(collectionNames);
             })
@@ -55,7 +39,7 @@ namespace api.Endpoints
             })
             .WithName("ListDataSources");
 
-            app.MapDelete("/datasources/{id:guid}", async (Guid id, DataStorageContext context) =>
+            app.MapDelete("/datasources/{id:guid}", async (Guid id, JoyQueryClient client, DataStorageContext context) =>
             {
                 var dataSource = await context.DataSources
                     .FirstOrDefaultAsync(x => x.Id == id);

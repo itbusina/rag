@@ -1,4 +1,5 @@
 using api.Endpoints;
+using api.Services;
 using core;
 using core.Storage;
 using Microsoft.EntityFrameworkCore;
@@ -10,8 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 // Register EF Core + SQLite
-builder.Services.AddDbContext<DataStorageContext>(options =>
-    options.UseSqlite("Data Source=.storage/rag.db"));
+builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite("Data Source=.storage/rag.db"));
+builder.Services.AddSingleton<JoyQueryClient>((sp) =>
+    new JoyQueryClient(
+        llmEndpoint: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434",
+        embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
+        summarizingModel: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
+        qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:6334"
+    )
+);
+builder.Services.AddScoped<DataSourceService>();
 
 // Add CORS services
 builder.Services.AddCors(options =>
@@ -49,15 +58,7 @@ app.UseCors();
 
 app.UseHttpsRedirection();
 
-var joyQueryClient = new JoyQueryClient(
-
-    llmEndpoint: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434",
-    embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
-    summarizingModel: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
-    qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:6334"
-);
-
-app.InitDataSourcesEndpoints(joyQueryClient);
-app.InitAssistantEndpoints(joyQueryClient);
+app.InitDataSourcesEndpoints();
+app.InitAssistantEndpoints();
 
 app.Run();

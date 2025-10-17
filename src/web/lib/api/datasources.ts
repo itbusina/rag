@@ -12,6 +12,7 @@ export enum DataSourceType {
   GitHub = 2,
   Url = 3,
   Sitemap = 4,
+  Confluence = 5,
 }
 
 export interface DataSource {
@@ -62,13 +63,40 @@ export class DataSourcesApiClient {
     })
     formData.append("name", name)
 
-    const response = await fetch(`${this.baseUrl}/datasources`, {
+    const response = await fetch(`${this.baseUrl}/datasources?type=file`, {
       method: "POST",
       body: formData,
     })
 
     if (!response.ok) {
       throw new Error(`Failed to create data sources: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
+   * Create a Confluence data source
+   */
+  async createConfluence(params: {
+    name: string
+    serverUrl: string
+    personalToken: string
+    parentUrl: string
+  }): Promise<string> {
+    const formData = new FormData()
+    formData.append("name", params.name)
+    formData.append("url", params.serverUrl)
+    formData.append("token", params.personalToken)
+    formData.append("parentPageId", params.parentUrl)
+
+    const response = await fetch(`${this.baseUrl}/datasources?type=confluence`, {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to create Confluence data source: ${response.statusText}`)
     }
 
     return response.json()
@@ -95,6 +123,12 @@ export const dataSourcesApi = new DataSourcesApiClient()
 export const getDataSources = () => dataSourcesApi.getAll()
 export const getDataSource = (id: string) => dataSourcesApi.getById(id)
 export const createDataSources = (files: File[], name: string) => dataSourcesApi.create(files, name)
+export const createConfluenceDataSource = (params: {
+  name: string
+  serverUrl: string
+  personalToken: string
+  parentUrl: string
+}) => dataSourcesApi.createConfluence(params)
 export const deleteDataSource = (id: string) => dataSourcesApi.delete(id)
 
 // Helper function to get data source type label
@@ -110,6 +144,8 @@ export const getDataSourceTypeLabel = (type: DataSourceType): string => {
       return "URL"
     case DataSourceType.Sitemap:
       return "Sitemap"
+    case DataSourceType.Confluence:
+      return "Confluence"
     default:
       return "Unknown"
   }

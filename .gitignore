@@ -421,6 +421,4 @@ FodyWeavers.xsd
 .DS_Store
 *.Development.json
 *.db*
-package-lock.json
-pnpm-lock.yaml
 .next

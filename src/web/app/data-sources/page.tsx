@@ -14,7 +14,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, FileText, Trash2, Loader2 } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Plus, FileText, Trash2, Loader2, ChevronDown } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { 
   getDataSources, 
@@ -94,12 +100,27 @@ export default function DataSourcesPage() {
             </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <Link href="/data-sources/create">
-                <Button className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Create Data Source
-                </Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Create Data Source
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/data-sources/create" className="cursor-pointer">
+                      Add Document
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/data-sources/confluence/create" className="cursor-pointer">
+                      Add Confluence
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
@@ -131,12 +152,27 @@ export default function DataSourcesPage() {
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No data sources yet</h3>
             <p className="text-muted-foreground mb-6">Create your first data source to get started</p>
-            <Link href="/data-sources/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Data Source
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Data Source
+                  <ChevronDown className="h-4 w-4 ml-2" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center">
+                <DropdownMenuItem asChild>
+                  <Link href="/data-sources/create" className="cursor-pointer">
+                    Add Document
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/data-sources/confluence/create" className="cursor-pointer">
+                    Add Confluence
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </Card>
         )}
 
