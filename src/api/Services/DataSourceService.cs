@@ -70,10 +70,8 @@ namespace api.Services
 
         internal async Task<List<string>> AddConfluenceDataSourceAsync(string name, string baseUrl, string token, string parentPageUrl)
         {
-            var collectionNames = new List<string>();
             var dataLoader = new ConfluenceDataLoader(baseUrl, ConfluenceType.Server, token, parentPageUrl);
             var collectionName = await _client.LoadDataAsync(dataLoader);
-            collectionNames.Add(collectionName);
 
             _context.DataSources.Add(new DataSource
             {
@@ -85,7 +83,25 @@ namespace api.Services
             });
             await _context.SaveChangesAsync();
 
-            return collectionNames;
+            return [collectionName];
+        }
+
+        internal async Task<List<string>> AddGitHubDataSourceAsync(string name, string repoUrl, string token)
+        {
+            var dataLoader = new GitHubDataLoader(repoUrl, token);
+            var collectionName = await _client.LoadDataAsync(dataLoader);
+
+            _context.DataSources.Add(new DataSource
+            {
+                Name = name,
+                CollectionName = collectionName,
+                DataSourceType = DataSourceType.GitHub,
+                DataSourceValue = repoUrl,
+                CreatedDate = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            return [collectionName];
         }
     }
 }
