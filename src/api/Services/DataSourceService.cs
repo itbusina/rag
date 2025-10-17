@@ -1,5 +1,6 @@
 using core;
 using core.Data;
+using core.Models;
 using core.Storage;
 using core.Storage.Models;
 using Microsoft.EntityFrameworkCore;
@@ -56,7 +57,7 @@ namespace api.Services
                 {
                     Name = name,
                     CollectionName = collectionName,
-                    DataSourceType = core.Models.DataSourceType.Stream,
+                    DataSourceType = DataSourceType.Stream,
                     DataSourceValue = file.FileName,
                     CreatedDate = DateTime.UtcNow
                 });
@@ -67,10 +68,10 @@ namespace api.Services
             return collectionNames;
         }
 
-        internal async Task<List<string>> AddConfluenceDataSourceAsync(string name, string baseUrl, string token, string parentPageId)
+        internal async Task<List<string>> AddConfluenceDataSourceAsync(string name, string baseUrl, string token, string parentPageUrl)
         {
             var collectionNames = new List<string>();
-            var dataLoader = new ConfluenceDataLoader(baseUrl, ConfluenceType.Server, token, parentPageId);
+            var dataLoader = new ConfluenceDataLoader(baseUrl, ConfluenceType.Server, token, parentPageUrl);
             var collectionName = await _client.LoadDataAsync(dataLoader);
             collectionNames.Add(collectionName);
 
@@ -78,8 +79,8 @@ namespace api.Services
             {
                 Name = name,
                 CollectionName = collectionName,
-                DataSourceType = core.Models.DataSourceType.Confluence,
-                DataSourceValue = $"{baseUrl} - Parent Page ID: {parentPageId}",
+                DataSourceType = DataSourceType.Confluence,
+                DataSourceValue = parentPageUrl,
                 CreatedDate = DateTime.UtcNow
             });
             await _context.SaveChangesAsync();
