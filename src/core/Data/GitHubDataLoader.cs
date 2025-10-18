@@ -1,4 +1,5 @@
 using core.Embeddings;
+using core.Helpers;
 using core.Models;
 using Octokit;
 
@@ -14,35 +15,25 @@ namespace core.Data
         public required string Author { get; set; }
         public required DateTime Date { get; set; }
     }
-    
+
     public class GitHubDataLoader : IDataLoader
     {
         private readonly string _repositoryUrl;
         private readonly string? _accessToken;
-        private string _owner = string.Empty;
-        private string _repoName = string.Empty;
+        private readonly string _owner = string.Empty;
+        private readonly string _repoName = string.Empty;
+        private readonly string _server = string.Empty;
         private readonly List<GitHubChunkMetadata> _allComments = [];
 
         public GitHubDataLoader(string repositoryUrl, string? accessToken = null)
         {
+            var (server, org, repo) = GitHubUrlParser.Parse(repositoryUrl);
+
             _repositoryUrl = repositoryUrl;
             _accessToken = accessToken;
-            ParseRepositoryUrl();
-        }
-
-        private void ParseRepositoryUrl()
-        {
-            // Parse GitHub URL like "https://github.com/owner/repo" or "github.com/owner/repo"
-            var uri = _repositoryUrl.Replace("https://", "").Replace("http://", "").Replace("github.com/", "");
-            var parts = uri.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-            if (parts.Length < 2)
-            {
-                throw new ArgumentException($"Invalid GitHub repository URL: {_repositoryUrl}. Expected format: https://github.com/owner/repo");
-            }
-
-            _owner = parts[0];
-            _repoName = parts[1].Replace(".git", ""); // Remove .git suffix if present
+            _server = server;
+            _owner = org;
+            _repoName = repo;
         }
 
         public async Task LoadAsync()
@@ -51,7 +42,7 @@ namespace core.Data
             {
                 Console.WriteLine($"Loading commit messages from {_owner}/{_repoName}...");
 
-                var client = new GitHubClient(new ProductHeaderValue("RAG-GitHub-App"));
+                var client = new GitHubClient(new ProductHeaderValue("RAG-GitHub-App"), new Uri(_server));
 
                 // Prioritize constructor token, then check environment variable
                 var githubToken = _accessToken ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
@@ -69,37 +60,23 @@ namespace core.Data
                 var commits = await client.Repository.Commit.GetAll(_owner, _repoName);
                 Console.WriteLine($"Found {commits.Count} commits");
 
-                int totalMessages = 0;
-
-                // Iterate through each commit
-                foreach (var commit in commits)
-                {
-                    var commitSha = commit.Sha;
-                    var commitMessage = commit.Commit.Message;
-                    var commitAuthor = commit.Commit.Author.Name;
-                    var commitDate = commit.Commit.Author.Date;
-
-                    Console.WriteLine($"Processing commit {commitSha.Substring(0, 7)}: {commitMessage}");
-
-                    // Add commit message
-                    if (!string.IsNullOrWhiteSpace(commitMessage))
+                var allCommits = commits
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Commit.Message))
+                    .Select(commit => new GitHubChunkMetadata
                     {
-                        _allComments.Add(new GitHubChunkMetadata
-                        {
-                            Repository = _repoName,
-                            Organization = _owner,
-                            RepositoryUrl = _repositoryUrl,
-                            CommitMessage = commitMessage,
-                            CommitSha = commitSha,
-                            Author = commitAuthor,
-                            Date = commitDate.DateTime
-                        });
+                        Repository = _repoName,
+                        Organization = _owner,
+                        RepositoryUrl = _repositoryUrl,
+                        CommitMessage = commit.Commit.Message,
+                        CommitSha = commit.Sha,
+                        Author = commit.Commit.Author.Name,
+                        Date = commit.Commit.Author.Date.DateTime
+                    })
+                    .ToList();
 
-                        totalMessages++;
-                    }
-                }
+                _allComments.AddRange(allCommits);
 
-                Console.WriteLine($"Successfully loaded {totalMessages} commit messages from {commits.Count} commits");
+                Console.WriteLine($"Successfully loaded {_allComments.Count} commit messages from {commits.Count} commits");
             }
             catch (RateLimitExceededException ex)
             {
@@ -107,13 +84,13 @@ namespace core.Data
                 Console.WriteLine("Consider adding a GITHUB_TOKEN environment variable for higher rate limits.");
                 throw;
             }
-            catch (NotFoundException)
+            catch (NotFoundException ex)
             {
                 Console.WriteLine($"Repository {_owner}/{_repoName} not found or access denied.");
                 Console.WriteLine("If this is a private repository, ensure you've provided a valid GitHub access token.");
                 throw;
             }
-            catch (AuthorizationException)
+            catch (AuthorizationException ex)
             {
                 Console.WriteLine($"Authorization failed for repository {_owner}/{_repoName}.");
                 Console.WriteLine("The provided token may be invalid or may not have the required permissions.");
@@ -133,27 +110,41 @@ namespace core.Data
             {
                 throw new InvalidOperationException("No content loaded. Call Load() before GetContentChunks().");
             }
+
+            var splitter = new LangChain.Splitters.Text.RecursiveCharacterTextSplitter(
+                                separators: ["\n\n", "\n", " ", ""],
+                                chunkSize: 1000,
+                                chunkOverlap: 200
+                            );
+
             var chunks = new List<Chunk>();
             foreach (var comment in _allComments)
             {
-                var chunk = new Chunk
+                var commentChunks = splitter.SplitText(comment.CommitMessage);
+                foreach (var commentChunk in commentChunks)
                 {
-                    Content = comment.CommitMessage,
-                    Type = DataSourceType.GitHub,
-                    Value = _repositoryUrl,
-                    Embedding = await embedder.GetEmbedding(comment.CommitMessage),
-                    Metadata = new Dictionary<string, string>
+                    var chunk = new Chunk
                     {
-                        { "repository", comment.Repository },
-                        { "organization", comment.Organization },
-                        { "repository_url", comment.RepositoryUrl },
-                        { "commit_url", $"{comment.RepositoryUrl}/commit/{comment.CommitSha}" },
-                        { "commit_sha", comment.CommitSha },
-                        { "author", comment.Author },
-                        { "date", comment.Date.ToString("o") } // ISO 8601 format
-                    }
-                };
-                chunks.Add(chunk);
+                        Content = commentChunk,
+                        Type = DataSourceType.GitHub,
+                        Value = _repositoryUrl,
+                        Embedding = await embedder.GetEmbedding(commentChunk),
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "repository", comment.Repository },
+                            { "organization", comment.Organization },
+                            { "repository_url", comment.RepositoryUrl },
+                            { "commit_url", $"{comment.RepositoryUrl}/commit/{comment.CommitSha}" },
+                            { "commit_sha", comment.CommitSha },
+                            { "author", comment.Author },
+                            { "date", comment.Date.ToString("o") } // ISO 8601 format
+                        }
+                    };
+
+                    chunks.Add(chunk);
+                }
+
+                Console.WriteLine($"Processing comment {_allComments.IndexOf(comment) + 1}/{_allComments.Count}, chunks in comment: {commentChunks.Count}");
             }
 
             return chunks;
