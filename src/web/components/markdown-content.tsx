@@ -61,7 +61,7 @@ export function MarkdownContent({ content, className = '' }: MarkdownContentProp
             }
             return (
               <code
-                className={`block text-sm font-mono ${className || ''}`}
+                className={`text-sm font-mono ${className || ''}`}
                 {...props}
               >
                 {children}
