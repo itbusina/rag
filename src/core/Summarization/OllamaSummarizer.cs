@@ -7,7 +7,7 @@ namespace core.Summarization
 {
     public class OllamaSummarizer : ISummarizer
     {
-        private const string SYSTEM_PROMPT = "You are an expert assistant. Answer the question based only on the given context.";
+        private const string DEFAULT_SYSTEM_PROMPT = "You are an expert assistant. Answer the question based only on the given context.";
         private readonly HttpClient _httpClient;
         private readonly string _model;
         private readonly string _baseUrl;
@@ -23,7 +23,7 @@ namespace core.Summarization
             };
         }
 
-        public async Task<string> SummarizeAsync(string query, List<Chunk> contextChunks)
+        public async Task<string> SummarizeAsync(string query, List<Chunk> contextChunks, string? instructions = null)
         {
             // create LLM context from chunk's content and metadata
             var context = string.Join("\n", contextChunks.Select(c => "Content: " + c.Content + "\n" + string.Join("\n", c.Metadata.Select(m => $"{m.Key}: {m.Value}"))));
@@ -31,7 +31,7 @@ namespace core.Summarization
             // prepare messages for Ollama
             var messages = new List<OllamaMessage>
             {
-                new() { Role = "system", Content = SYSTEM_PROMPT },
+                new() { Role = "system", Content = instructions ?? DEFAULT_SYSTEM_PROMPT },
                 new() { Role = "user", Content = $"Context: {context}\n\nQuestion: {query}" }
             };
 

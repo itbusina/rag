@@ -47,7 +47,7 @@ namespace core
             return collectionName;
         }
 
-        public async Task<string> QueryAsync(List<string> collections, string question, int limit = 3)
+        public async Task<string> QueryAsync(List<string> collections, string question, int limit = 3, string? instructions = "")
         {
             // Step 4. Convert query to embedding
             var query = await _embedder.GetEmbedding(question);
@@ -56,7 +56,7 @@ namespace core
             var topChunks = await Monitoring.Log(() => _vectorStorage.SearchAsync(collections, query, limit), "_vectorStorage.SearchAsync(collections, query, limit)");
 
             // Step 6: Summarize the answer
-            var summary = await Monitoring.Log(() => _summarizer.SummarizeAsync(question, [.. topChunks]), "_summarizer.SummarizeAsync(question, [.. topChunks]");
+            var summary = await Monitoring.Log(() => _summarizer.SummarizeAsync(question, [.. topChunks], instructions), "_summarizer.SummarizeAsync(question, [.. topChunks],  instructions");
 
             return summary;
         }

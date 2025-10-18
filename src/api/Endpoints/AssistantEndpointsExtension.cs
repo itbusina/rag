@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Endpoints
 {
-    record AssistantRequest(string Name, List<string> DataSources);
-    
+    record AssistantRequest(string Name, List<string> DataSources, string? Instructions = null, int? QueryResultsLimit = null);
+
     public static class AssistantEndpointsExtension
     {
         public static void InitAssistantEndpoints(this WebApplication app)
@@ -39,7 +39,9 @@ namespace api.Endpoints
                 var assistant = new Assistant
                 {
                     Name = request.Name,
-                    DataSources = dataSources
+                    DataSources = dataSources,
+                    Instructions = request.Instructions,
+                    QueryResultsLimit = request.QueryResultsLimit
                 };
 
                 context.Assistants.Add(assistant);
@@ -74,10 +76,12 @@ namespace api.Endpoints
                     {
                         x.Id,
                         x.Name,
+                        x.Instructions,
+                        x.QueryResultsLimit,
                         DataSources = x.DataSources.Select(ds => ds.Id).ToList()
                     })
                     .FirstOrDefault(x => x.Id == id);
-                
+
                 if (assistant == null)
                     return Results.NotFound();
 
@@ -85,16 +89,14 @@ namespace api.Endpoints
             })
             .WithName("GetAssistant");
 
-            app.MapPut("/assistants/{id:guid}", async (Guid id, [FromBody]AssistantRequest request, DataStorageContext context) =>
+            app.MapPut("/assistants/{id:guid}", async (Guid id, [FromBody] AssistantRequest request, DataStorageContext context) =>
             {
                 var assistant = context.Assistants
                     .Include(x => x.DataSources)
                     .FirstOrDefault(x => x.Id == id);
-                
+
                 if (assistant == null)
                     return Results.NotFound();
-
-                assistant.Name = request.Name;
 
                 // Update data sources
                 var searchList = request.DataSources.Select(x => Guid.Parse(x)).ToList();
@@ -102,8 +104,12 @@ namespace api.Endpoints
                     .Where(x => searchList.Any(s => s == x.Id))
                     .ToList();
 
+                // Update assistant properties
+                assistant.Name = request.Name;
                 assistant.DataSources = dataSources;
-
+                assistant.Instructions = request.Instructions;
+                assistant.QueryResultsLimit = request.QueryResultsLimit;
+                
                 await context.SaveChangesAsync();
 
                 return Results.Ok();
@@ -138,7 +144,11 @@ namespace api.Endpoints
                     .Select(x => x.CollectionName)
                     .ToList();
 
-                var summary = await client.QueryAsync(collections, input, 3);
+                var summary = await client.QueryAsync(
+                                            collections,
+                                            input,
+                                            assistant.QueryResultsLimit ?? 3,
+                                            assistant.Instructions);
 
                 return Results.Ok(new
                 {

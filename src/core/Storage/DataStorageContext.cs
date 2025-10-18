@@ -3,13 +3,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace core.Storage
 {
-    public class DataStorageContext(DbContextOptions<DataStorageContext> options) : DbContext(options)
+    public class DataStorageContext : DbContext
     {
         public DbSet<DataSource> DataSources => Set<DataSource>();
         public DbSet<Assistant> Assistants => Set<Assistant>();
 
-        // protected override void OnConfiguring(DbContextOptionsBuilder options)
-        //     => options.UseSqlite("Data Source=data/data.db");
+        public DataStorageContext(DbContextOptions<DataStorageContext> options) : base(options)
+        {
+        }
+
+        // Add this:
+        public DataStorageContext()
+        {
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder options)
+            => options.UseSqlite("Data Source=.storage/data.db");
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

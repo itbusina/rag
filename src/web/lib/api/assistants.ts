@@ -10,11 +10,15 @@ export interface Assistant {
   id: string
   name: string
   dataSources: string[]
+  instructions?: string
+  queryResultsLimit?: number
 }
 
 export interface CreateAssistantRequest {
   name: string
   dataSources: string[]
+  instructions?: string
+  queryResultsLimit?: number
 }
 
 export interface CreateAssistantResponse {

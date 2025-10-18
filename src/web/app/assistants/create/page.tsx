@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Textarea } from "@/components/ui/textarea"
 import { ArrowLeft, Database, Loader2 } from "lucide-react"
 
 import type { DataSource } from "@/lib/api"
@@ -18,6 +19,8 @@ import { getDataSourceTypeLabel } from "@/lib/api"
 export default function CreateAssistantPage() {
   const router = useRouter()
   const [name, setName] = useState("")
+  const [instructions, setInstructions] = useState("")
+  const [queryResultsLimit, setQueryResultsLimit] = useState<number>(3)
   const [selectedDataSources, setSelectedDataSources] = useState<string[]>([])
   const [dataSources, setDataSources] = useState<DataSource[]>([])
   const [isLoadingDataSources, setIsLoadingDataSources] = useState(true)
@@ -62,6 +65,8 @@ export default function CreateAssistantPage() {
       const result = await createAssistant({
         name,
         dataSources: selectedDataSources,
+        instructions: instructions.trim() || undefined,
+        queryResultsLimit: queryResultsLimit,
       })
       
       console.log("Assistant created:", result)
@@ -117,6 +122,44 @@ export default function CreateAssistantPage() {
                   className="bg-background border-border text-foreground"
                 />
                 <p className="text-xs text-muted-foreground">Choose a descriptive name for your assistant</p>
+              </div>
+
+              {/* Special Instructions */}
+              <div className="space-y-2">
+                <Label htmlFor="instructions" className="text-sm font-medium text-foreground">
+                  Special Instructions <span className="text-muted-foreground font-normal">(Optional)</span>
+                </Label>
+                <Textarea
+                  id="instructions"
+                  placeholder="e.g., Always provide code examples, focus on best practices, use a friendly tone..."
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  disabled={isSubmitting}
+                  className="bg-background border-border text-foreground min-h-[100px]"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Provide specific instructions to guide the assistant's responses
+                </p>
+              </div>
+
+              {/* Query Results Limit */}
+              <div className="space-y-2">
+                <Label htmlFor="queryResultsLimit" className="text-sm font-medium text-foreground">
+                  Search Results Limit
+                </Label>
+                <Input
+                  id="queryResultsLimit"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={queryResultsLimit}
+                  onChange={(e) => setQueryResultsLimit(Number(e.target.value))}
+                  disabled={isSubmitting}
+                  className="bg-background border-border text-foreground"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Number of relevant documents to retrieve for each query (default: 3)
+                </p>
               </div>
 
               {/* Data Sources */}
