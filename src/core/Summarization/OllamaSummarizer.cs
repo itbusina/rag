@@ -11,6 +11,10 @@ namespace core.Summarization
         private readonly HttpClient _httpClient;
         private readonly string _model;
         private readonly string _baseUrl;
+        private JsonSerializerOptions _jsonOptions = new()
+        {
+            WriteIndented = true // Enables pretty formatting
+        };
 
         public OllamaSummarizer(string model, string baseUrl = "http://localhost:11434")
         {
@@ -26,7 +30,11 @@ namespace core.Summarization
         public async Task<string> SummarizeAsync(string query, List<Chunk> contextChunks, string? instructions = null)
         {
             // create LLM context from chunk's content and metadata
-            var context = string.Join("\n", contextChunks.Select(c => "Content: " + c.Content + "\n" + string.Join("\n", c.Metadata.Select(m => $"{m.Key}: {m.Value}"))));
+            var context = JsonSerializer.Serialize(contextChunks.Select(c => new
+            {
+                c.Content,
+                Metadata = c.Metadata.ToDictionary(m => m.Key, m => m.Value)
+            }), _jsonOptions);
 
             // prepare messages for Ollama
             var messages = new List<OllamaMessage>
@@ -48,7 +56,7 @@ namespace core.Summarization
                 response.EnsureSuccessStatusCode();
 
                 var result = await response.Content.ReadFromJsonAsync<OllamaChatResponse>();
-                
+
                 if (result?.Message?.Content == null)
                 {
                     throw new Exception("Invalid response from Ollama API");
