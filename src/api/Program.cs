@@ -1,7 +1,10 @@
 using api.Endpoints;
 using api.Services;
 using core;
+using core.Embeddings;
 using core.Storage;
+using core.Summarization;
+using core.VectorStorage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,15 +14,54 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 
 // Register EF Core + SQLite
-builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite("Data Source=.storage/rag.db"));
-builder.Services.AddSingleton<JoyQueryClient>((sp) =>
-    new JoyQueryClient(
-        llmEndpoint: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434",
-        embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
-        summarizingModel: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
-        qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:6334"
+var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? "rag.db";
+builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={connectionString}"));
+
+// Core services registrations
+const string OLLAMA_SERVICE_PROVIDER = "ollama";
+const string OPENAI_SERVICE_PROVIDER = "openai";
+
+builder.Services.AddKeyedSingleton<IEmbedder>(OLLAMA_SERVICE_PROVIDER, (sp, key) =>
+    new OllamaEmbedder(
+        model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
+        baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
     )
 );
+builder.Services.AddKeyedSingleton<IEmbedder>(OPENAI_SERVICE_PROVIDER, (sp, key) =>
+    new OpenAIEmbedder(
+        model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "text-embedding-3-small",
+        apiKey: Environment.GetEnvironmentVariable("LLM_API_KEY") ?? ""
+    )
+);
+builder.Services.AddKeyedSingleton<ISummarizer>(OLLAMA_SERVICE_PROVIDER, (sp, key) =>
+    new OllamaSummarizer(
+        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
+        baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
+    )
+);
+builder.Services.AddKeyedSingleton<ISummarizer>(OPENAI_SERVICE_PROVIDER, (sp, key) =>
+    new OpenAISummarizer(
+        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "gpt-4o-mini",
+        apiKey: Environment.GetEnvironmentVariable("LLM_API_KEY") ?? ""
+    )
+);
+builder.Services.AddSingleton<IVectorStorage>((sp) =>
+    new QdrantVectorStorage(
+        host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
+        apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? ""
+    )
+);
+
+// Register JoyQueryClient
+builder.Services.AddSingleton<JoyQueryClient>((sp) =>
+{
+    var provider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OLLAMA_SERVICE_PROVIDER;
+    var embedder = sp.GetRequiredKeyedService<IEmbedder>(provider);
+    var summarizer = sp.GetRequiredKeyedService<ISummarizer>(provider);
+    var vectorStorage = sp.GetRequiredService<IVectorStorage>();
+
+    return new JoyQueryClient(embedder, summarizer, vectorStorage);
+});
 builder.Services.AddScoped<DataSourceService>();
 
 // Add CORS services

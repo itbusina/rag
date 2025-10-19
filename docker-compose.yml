@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: src/api/Dockerfile
-      args:
-        - NEXT_PUBLIC_API_URL=http://localhost:8080
     depends_on:
       #ollama:
       #  condition: service_healthy
@@ -15,10 +13,12 @@ services:
       - QDRANT_ENDPOINT=http://qdrant:6334
       - EMBEDDING_MODEL=nomic-embed-text
       - SUMMARIZING_MODEL=llama3.1:8b
+      - SERVICE_PROVIDER=ollama
+      - DATA_STORAGE_CONNECTION_STRING=/home/app/rag.db
     ports:
       - "8080:8080"
     volumes:
-      - rag-data:/app/.storage
+      - rag-data:/home/app/
     networks:
       - ai-net
 

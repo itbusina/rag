@@ -161,7 +161,7 @@ namespace api.Endpoints
             {
                 var scheme = context.Request.Scheme;
                 var host = context.Request.Host.Value;
-                var baseUrl = $"{scheme}://{host}";
+                var baseUrl = $"https://{host}";
 
                 // Read the widget script template from file
                 var scriptPath = Path.Combine(app.Environment.ContentRootPath, "widget", "js/widget.js");

@@ -6,11 +6,11 @@ using core.VectorStorage;
 
 namespace core
 {
-    public class JoyQueryClient(string llmEndpoint, string embeddingModel, string summarizingModel, string qdrantEndpoint)
+    public class JoyQueryClient(IEmbedder embedder, ISummarizer summarizer, IVectorStorage vectorStorage)
     {
-        private readonly IVectorStorage _vectorStorage = new QdrantVectorStorage(qdrantEndpoint);
-        private readonly IEmbedder _embedder = new OllamaEmbedder(embeddingModel, llmEndpoint);
-        private readonly ISummarizer _summarizer = new OllamaSummarizer(summarizingModel, llmEndpoint);
+        private readonly IEmbedder _embedder = embedder;
+        private readonly ISummarizer _summarizer = summarizer;
+        private readonly IVectorStorage _vectorStorage = vectorStorage;
 
         public async Task<string> LoadDataAsync(string sourceType, string sourceValue)
         {

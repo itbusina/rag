@@ -4,9 +4,13 @@ using Qdrant.Client.Grpc;
 
 namespace core.VectorStorage
 {
-    public class QdrantVectorStorage(string address = "http://localhost:6334") : IVectorStorage
+    public class QdrantVectorStorage(string host = "localhost", bool useHttps = true, string apiKey = "") : IVectorStorage
     {
-        private readonly QdrantClient _client = new(new Uri(address));
+        private readonly QdrantClient _client = new(
+            host: host,
+            https: useHttps,
+            apiKey: apiKey
+        );
 
         public async Task CreateCollectionAsync(string collectionName, ulong vectorSize)
         {
