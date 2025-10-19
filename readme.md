@@ -87,6 +87,17 @@ Open the chat for the assistant and start searching across the data sources.
 
 ---
 
+## Cloud Setup
+1. Setup account in https://cloud.qdrant.io/
+2. Create cluster, copy qdrant URL and API Key.
+3. Setup OpenAI account
+4. Create OpenAI service account https://platform.openai.com/api-keys
+5. Deploy the api application to cloud (Azure) with docker
+6. Configure environment variables to point OpenAI API and Qdrant, set SERVICE_PROVIDER to openai
+7. Set DATA_STORAGE_CONNECTION_STRING to /home/rag.db. /home is a folder which is preserved and not removed after service restart.
+7. Run the application.
+
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
