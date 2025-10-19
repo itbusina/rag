@@ -40,6 +40,7 @@ RUN rm -rf ./api/wwwroot/*
 
 # Copy Next.js build output from frontend-builder stage to wwwroot
 COPY --from=frontend-builder /app/web/out/ ./api/wwwroot/
+COPY /src/api/demo ./api/wwwroot/
 
 # Build the API project
 RUN dotnet publish ./api/api.csproj -c Release -o /app/publish
