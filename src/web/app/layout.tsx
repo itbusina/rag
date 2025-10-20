@@ -2,7 +2,6 @@ import type React from "react"
 import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import "highlight.js/styles/github-dark.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -26,7 +25,6 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
             <AppLayout>{children}</AppLayout>
-            <Analytics />
           </ThemeProvider>
         </Suspense>
       </body>
