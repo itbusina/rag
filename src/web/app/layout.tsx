@@ -10,8 +10,8 @@ import { AppLayout } from "@/components/app-layout"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
-  title: "RAG Admin - v0 App",
-  description: "Manage your RAG assistants and data sources",
+  title: "Joyquery",
+  description: "Manage your AI chat assistants",
   generator: "v0.app",
 }
 

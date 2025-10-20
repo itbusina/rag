@@ -39,7 +39,7 @@ export function SidebarNav({
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
           {!collapsed && (
             <div>
-              <h2 className="font-mono font-bold text-sidebar-foreground">RAG Admin</h2>
+              <h2 className="font-mono font-bold text-sidebar-foreground">Joyquery Dashboard</h2>
               <p className="text-xs text-muted-foreground">v1.0.0</p>
             </div>
           )}
