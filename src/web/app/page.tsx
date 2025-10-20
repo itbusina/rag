@@ -79,13 +79,7 @@ export default function DashboardPage() {
           <Card className="p-12 border border-border bg-card text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No assistants yet</h3>
-            <p className="text-muted-foreground mb-6">Create your first RAG assistant to get started</p>
-            <Link href="/assistants/create">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Assistant
-              </Button>
-            </Link>
+            <p className="text-muted-foreground">Create your first RAG assistant to get started</p>
           </Card>
         )}
 

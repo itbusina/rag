@@ -156,33 +156,7 @@ export default function DataSourcesPage() {
           <Card className="p-12 border border-border bg-card text-center">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">No data sources yet</h3>
-            <p className="text-muted-foreground mb-6">Create your first data source to get started</p>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Data Source
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="center">
-                <DropdownMenuItem asChild>
-                  <Link href="/data-sources/create" className="cursor-pointer">
-                    Add Document
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/data-sources/confluence/create" className="cursor-pointer">
-                    Add Confluence
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/data-sources/github/create" className="cursor-pointer">
-                    Add GitHub
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <p className="text-muted-foreground">Create your first data source to get started</p>
           </Card>
         )}
 
