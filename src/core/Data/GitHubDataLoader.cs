@@ -86,12 +86,14 @@ namespace core.Data
             }
             catch (NotFoundException ex)
             {
+                Console.WriteLine($"Error loading data from GitHub: {ex.Message}");
                 Console.WriteLine($"Repository {_owner}/{_repoName} not found or access denied.");
                 Console.WriteLine("If this is a private repository, ensure you've provided a valid GitHub access token.");
                 throw;
             }
             catch (AuthorizationException ex)
             {
+                Console.WriteLine($"Error loading data from GitHub: {ex.Message}");
                 Console.WriteLine($"Authorization failed for repository {_owner}/{_repoName}.");
                 Console.WriteLine("The provided token may be invalid or may not have the required permissions.");
                 Console.WriteLine("For private repositories, ensure your token has 'repo' scope.");
