@@ -125,7 +125,6 @@ export default function CreateDataSourcePage() {
                   onChange={handleFileChange} 
                   disabled={isSubmitting}
                   className="hidden"
-                  accept=".pdf,.txt,.md,.doc,.docx" 
                 />
                 <Label htmlFor="files">
                   <Button 
