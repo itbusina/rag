@@ -68,6 +68,33 @@ namespace api.Services
             return collectionNames;
         }
 
+        public async Task<List<string>> AddFAQDataSourceAsync(string name, IFormFileCollection files)
+        {
+            var collectionNames = new List<string>();
+            foreach (var file in files)
+            {
+                if (file.Length == 0)
+                    continue;
+
+                var dataLoader = new FAQDataLoader(file.FileName, file.OpenReadStream());
+                var collectionName = await _client.LoadDataAsync(dataLoader);
+                collectionNames.Add(collectionName);
+
+                _context.DataSources.Add(new DataSource
+                {
+                    Name = name,
+                    CollectionName = collectionName,
+                    DataSourceType = DataSourceType.Stream,
+                    DataSourceValue = file.FileName,
+                    CreatedDate = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return collectionNames;
+        }
+
         internal async Task<List<string>> AddConfluenceDataSourceAsync(string name, string baseUrl, string token, string parentPageUrl)
         {
             var dataLoader = new ConfluenceDataLoader(baseUrl, ConfluenceType.Server, token, parentPageUrl);

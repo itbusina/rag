@@ -17,11 +17,10 @@ namespace core
             IDataLoader dataLoader = sourceType switch
             {
                 "file" => new LocalFileDataLoader(sourceValue),
-                "qa" => new QADataLoader(sourceValue),
                 "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
                 "http" => new HttpDataLoader(sourceValue),
                 "sitemap" => new SitemapDataLoader(sourceValue),
-                _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'qa', 'github', 'http', or 'sitemap'."),
+                _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'faq', 'github', 'http', or 'sitemap'."),
             };
 
             return await LoadDataAsync(dataLoader);

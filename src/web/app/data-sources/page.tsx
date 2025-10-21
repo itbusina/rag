@@ -115,6 +115,11 @@ export default function DataSourcesPage() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
+                    <Link href="/data-sources/faq/create" className="cursor-pointer">
+                      Add FAQ
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
                     <Link href="/data-sources/confluence/create" className="cursor-pointer">
                       Add Confluence
                     </Link>

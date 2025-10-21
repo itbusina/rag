@@ -26,6 +26,7 @@ export {
   getDataSources,
   getDataSource,
   createDataSources,
+  createFAQDataSource,
   createConfluenceDataSource,
   createGitHubDataSource,
   deleteDataSource,

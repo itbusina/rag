@@ -76,6 +76,28 @@ export class DataSourcesApiClient {
   }
 
   /**
+   * Upload FAQ files to create data sources
+   */
+  async createFAQ(files: File[], name: string): Promise<string[]> {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append("files", file)
+    })
+    formData.append("name", name)
+
+    const response = await fetch(`${this.baseUrl}/datasources?type=faq`, {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to create FAQ data sources: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
    * Create a Confluence data source
    */
   async createConfluence(params: {
@@ -150,6 +172,7 @@ export const dataSourcesApi = new DataSourcesApiClient()
 export const getDataSources = () => dataSourcesApi.getAll()
 export const getDataSource = (id: string) => dataSourcesApi.getById(id)
 export const createDataSources = (files: File[], name: string) => dataSourcesApi.create(files, name)
+export const createFAQDataSource = (files: File[], name: string) => dataSourcesApi.createFAQ(files, name)
 export const createConfluenceDataSource = (params: {
   name: string
   serverUrl: string
