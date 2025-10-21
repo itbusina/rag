@@ -4,11 +4,13 @@ using Qdrant.Client.Grpc;
 
 namespace core.VectorStorage
 {
-    public class QdrantVectorStorage(string host = "localhost", bool useHttps = true, string apiKey = "") : IVectorStorage
+    public class QdrantVectorStorage(string host = "localhost", bool useHttps = true, string apiKey = "", float scoreThreshold = 0.8f) : IVectorStorage
     {
+        private readonly float _scoreThreshold = scoreThreshold;
+
         private readonly QdrantClient _client = new(
             host: host,
-            https: useHttps,
+            https: host != "localhost" && useHttps,
             apiKey: apiKey
         );
 
@@ -61,7 +63,7 @@ namespace core.VectorStorage
             var results = new List<ScoredPoint>();
             foreach (var collection in collections)
             {
-                var result = await _client.SearchAsync(collection, query, limit: (ulong)limit);
+                var result = await _client.SearchAsync(collection, query, limit: (ulong)limit, scoreThreshold: _scoreThreshold);
                 results.AddRange(result);
             }
 

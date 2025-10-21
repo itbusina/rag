@@ -48,7 +48,8 @@ builder.Services.AddKeyedSingleton<ISummarizer>(OPENAI_SERVICE_PROVIDER, (sp, ke
 builder.Services.AddSingleton<IVectorStorage>((sp) =>
     new QdrantVectorStorage(
         host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
-        apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? ""
+        apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
+        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), out var threshold) ? threshold : 0.8f //TODO: adjust threshold based on your content
     )
 );
 
