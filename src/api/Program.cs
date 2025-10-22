@@ -6,6 +6,7 @@ using core.Storage;
 using core.Summarization;
 using core.VectorStorage;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,7 @@ builder.Services.AddSingleton<IVectorStorage>((sp) =>
     new QdrantVectorStorage(
         host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
         apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
-        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), out var threshold) ? threshold : 0.8f //TODO: adjust threshold based on your content
+        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.7f //TODO: adjust threshold based on your content
     )
 );
 
