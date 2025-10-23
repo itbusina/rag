@@ -1,3 +1,4 @@
+using core.Chunking;
 using core.Embeddings;
 using core.Models;
 using UglyToad.PdfPig;
@@ -5,13 +6,12 @@ using UglyToad.PdfPig.Content;
 
 namespace core.Data
 {
-    public class StreamDataLoader(string filename, Stream fileStream, int maxSentences = 5, int overlap = 1) : IDataLoader
+    public class StreamDataLoader(ITextChunker textChunker, string filename, Stream fileStream) : IDataLoader
     {
+        private readonly ITextChunker _textChunker = textChunker;
         private readonly string _filename = filename;
         private readonly Stream _fileStream = fileStream;
         private string _content = string.Empty;
-        private int _maxSentences = maxSentences;
-        private int _overlap = overlap;
 
         public async Task LoadAsync()
         {
@@ -137,7 +137,7 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var textChunks = TextChunker.ChunkText(_content, _maxSentences, _overlap);
+            var textChunks = _textChunker.ChunkText(_content);
             var chunks = new List<Chunk>();
 
             foreach (var text in textChunks)

@@ -68,7 +68,7 @@ namespace api.Endpoints
             })
             .WithName("DeleteAssistant");
 
-            app.MapGet("/assistants/{id:guid}", async (Guid id, DataStorageContext context) =>
+            app.MapGet("/assistants/{id:guid}", (Guid id, DataStorageContext context) =>
             {
                 var assistant = context.Assistants
                     .Include(x => x.DataSources)

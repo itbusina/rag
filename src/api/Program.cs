@@ -1,6 +1,7 @@
 using api.Endpoints;
 using api.Services;
 using core;
+using core.Chunking;
 using core.Embeddings;
 using core.Storage;
 using core.Summarization;
@@ -53,6 +54,24 @@ builder.Services.AddSingleton<IVectorStorage>((sp) =>
         scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.7f //TODO: adjust threshold based on your content
     )
 );
+
+// text chunker registrations
+builder.Services.AddSingleton<ITextChunker>((sp) =>
+{
+    var chunkerType = Environment.GetEnvironmentVariable("TEXT_CHUNKER_TYPE")?.ToLower() ?? "recursive";
+    if(chunkerType == "sentence")
+    {
+        int maxSentences = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_SIZE"), out var max) ? max : 5;
+        int overlap = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_OVERLAP"), out var ovl) ? ovl : 1;
+        return new SentenceChunker(maxSentences, overlap);
+    }
+    else // default to recursive
+    {
+        int chunkSize = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : 500;
+        int overlap = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 50;
+        return new RecursiveTextChunker(chunkSize, overlap);
+    }
+});
 
 // Register JoyQueryClient
 builder.Services.AddSingleton<JoyQueryClient>((sp) =>

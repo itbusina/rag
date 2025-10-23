@@ -1,4 +1,8 @@
 ﻿using core;
+using core.Data;
+using core.Embeddings;
+using core.Summarization;
+using core.VectorStorage;
 
 class Program
 {
@@ -25,16 +29,39 @@ class Program
         var sourceValue = args[1];
 
         var joyQueryClient = new JoyQueryClient(
-            llmEndpoint: Environment.GetEnvironmentVariable("OLLAMA_ENDPOINT") ?? "http://localhost:11434",
-            embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
-            summarizingModel: Environment.GetEnvironmentVariable("LLM_MODEL") ?? "llama3.1:8b",
-            qdrantEndpoint: Environment.GetEnvironmentVariable("QDRANT_ENDPOINT") ?? "http://localhost:63334"
+            new OllamaEmbedder(
+                model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
+                baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
+            ),
+            new OllamaSummarizer(
+                model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
+                baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
+            ),
+            new QdrantVectorStorage(
+                host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
+                apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
+                scoreThreshold: 0.7f // TODO: adjust threshold based on your content
+            )
         );
 
+        var textChunker = new core.Chunking.RecursiveTextChunker(
+            chunkSize: int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : 500,
+            overlap: int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 50
+        );
+
+        IDataLoader dataLoader = source switch
+        {
+            "file" => new LocalFileDataLoader(textChunker, sourceValue),
+            "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
+            "http" => new HttpDataLoader(sourceValue),
+            "sitemap" => new SitemapDataLoader(sourceValue),
+            _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'faq', 'github', 'http', or 'sitemap'."),
+        };
+
         var collectionName = Guid.TryParse(source, out _)
-            ? source 
-            : await joyQueryClient.LoadDataAsync(source, sourceValue);
-        
+            ? source
+            : await joyQueryClient.LoadDataAsync(dataLoader);
+
         while (true)
         {
             Console.Write("\n\nEnter your question (or press Enter to exit): ");
