@@ -10,7 +10,7 @@ namespace api.Endpoints
     {
         public static void InitDataSourcesEndpoints(this WebApplication app)
         {
-            app.MapPost("/datasources", async ([FromQuery] string type, HttpRequest request, DataSourceService service, DataStorageContext context) =>
+            app.MapPost("/datasources", async ([FromQuery] string type, [FromQuery] bool useQA, HttpRequest request, DataSourceService service, DataStorageContext context) =>
             {
                 var form = await request.ReadFormAsync();
                 var name = form["name"].ToString();
@@ -22,7 +22,7 @@ namespace api.Endpoints
 
                 var collectionNames = type switch
                 {
-                    "file" => await service.AddFileDataSourceAsync(name, form.Files),
+                    "file" => await service.AddFileDataSourceAsync(name, form.Files, useQA),
                     "faq" => await service.AddFAQDataSourceAsync(name, form.Files),
                     "confluence" => await service.AddConfluenceDataSourceAsync(name, form["url"].ToString(), form["token"].ToString(), form["parentPageId"].ToString()),
                     "github" => await service.AddGitHubDataSourceAsync(name, form["url"].ToString(), form["token"].ToString()),

@@ -1,17 +1,19 @@
 using System.Net.Http.Json;
 using core.ChatClients.Models;
 
-namespace core.Embeddings
+namespace core.ChatClients
 {
-    public class OllamaEmbedder : IEmbedder
+    public class OllamaClient : IAIClient
     {
         private readonly HttpClient _httpClient;
         private readonly string _model;
+        private readonly string _embeddingModel;
         private readonly string _baseUrl;
 
-        public OllamaEmbedder(string model, string baseUrl = "http://localhost:11434")
+        public OllamaClient(string model, string embeddingModel, string baseUrl = "http://localhost:11434")
         {
             _model = model;
+            _embeddingModel = embeddingModel;
             _baseUrl = baseUrl;
             _httpClient = new HttpClient
             {
@@ -20,11 +22,16 @@ namespace core.Embeddings
             };
         }
 
-        public async Task<float[]> GetEmbedding(string text)
+        public async Task<string> GetChatCompletionAsync(List<AIClientMessage> messages)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<float[]> GetEmbeddingAsync(string text)
         {
             var request = new OllamaEmbeddingRequest
             {
-                Model = _model,
+                Model = _embeddingModel,
                 Prompt = text
             };
 

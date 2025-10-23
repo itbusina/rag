@@ -1,3 +1,4 @@
+using core.Helpers;
 using core.Models;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -11,10 +12,6 @@ namespace core.Summarization
         private readonly HttpClient _httpClient;
         private readonly string _model;
         private readonly string _baseUrl;
-        private JsonSerializerOptions _jsonOptions = new()
-        {
-            WriteIndented = true // Enables pretty formatting
-        };
 
         public OllamaSummarizer(string model, string baseUrl = "http://localhost:11434")
         {
@@ -34,7 +31,7 @@ namespace core.Summarization
             {
                 c.Content,
                 Metadata = c.Metadata.ToDictionary(m => m.Key, m => m.Value)
-            }), _jsonOptions);
+            }), DefaultJsonSerializerOptions.Options);
 
             // prepare messages for Ollama
             var messages = new List<OllamaMessage>

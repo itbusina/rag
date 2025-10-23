@@ -1,4 +1,5 @@
 using System.Text.Json;
+using core.Helpers;
 using core.Models;
 using OpenAI.Chat;
 
@@ -8,10 +9,6 @@ namespace core.Summarization
     {
         private const string DEFAULT_SYSTEM_PROMPT = "You are an expert assistant. Answer based only on the given context.";
         public readonly ChatClient chatClient = new(model, apiKey);
-        private JsonSerializerOptions _jsonOptions = new()
-        {
-            WriteIndented = true // Enables pretty formatting
-        };
 
         public async Task<string> SummarizeAsync(string query, List<Chunk> contextChunks, string? instructions = null)
         {
@@ -20,7 +17,7 @@ namespace core.Summarization
             {
                 c.Content,
                 Metadata = c.Metadata.ToDictionary(m => m.Key, m => m.Value)
-            }), _jsonOptions);
+            }), DefaultJsonSerializerOptions.Options);
             
             // prepare messages for LLM
             var messages = new List<ChatMessage>

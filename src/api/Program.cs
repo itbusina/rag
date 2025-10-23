@@ -1,12 +1,15 @@
 using api.Endpoints;
 using api.Services;
 using core;
+using core.ChatClients;
 using core.Chunking;
 using core.Embeddings;
 using core.Storage;
 using core.Summarization;
 using core.VectorStorage;
 using Microsoft.EntityFrameworkCore;
+using OpenAI.Chat;
+using OpenAI.Embeddings;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,7 +46,7 @@ builder.Services.AddKeyedSingleton<ISummarizer>(OLLAMA_SERVICE_PROVIDER, (sp, ke
 );
 builder.Services.AddKeyedSingleton<ISummarizer>(OPENAI_SERVICE_PROVIDER, (sp, key) =>
     new OpenAISummarizer(
-        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "gpt-4o-mini",
+        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "gpt-5-mini",
         apiKey: Environment.GetEnvironmentVariable("LLM_API_KEY") ?? ""
     )
 );
@@ -67,8 +70,8 @@ builder.Services.AddSingleton<ITextChunker>((sp) =>
     }
     else // default to recursive
     {
-        int chunkSize = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : 500;
-        int overlap = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 50;
+        int chunkSize = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : 1000;
+        int overlap = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 100;
         return new RecursiveTextChunker(chunkSize, overlap);
     }
 });
@@ -84,6 +87,35 @@ builder.Services.AddSingleton<JoyQueryClient>((sp) =>
     return new JoyQueryClient(embedder, summarizer, vectorStorage);
 });
 builder.Services.AddScoped<DataSourceService>();
+builder.Services.AddSingleton<IAIClient>(sp =>
+{
+    var llmModel = Environment.GetEnvironmentVariable("LLM_MODEL");
+    var embeddingModel = Environment.GetEnvironmentVariable("EMBEDDING_MODEL");
+    
+    var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OPENAI_SERVICE_PROVIDER;
+    if (serviceProvider == OLLAMA_SERVICE_PROVIDER)
+    {
+        var llmEndpoint = Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434";
+        return new OllamaClient(
+            model: llmModel ?? "llama3.1:8b",
+            embeddingModel: embeddingModel ?? "nomic-embed-text",
+            baseUrl: llmEndpoint 
+        );
+    }
+    else // default to OpenAI
+    {
+        var apiKey = Environment.GetEnvironmentVariable("LLM_API_KEY") ?? throw new InvalidOperationException("LLM_API_KEY environment variable is not set.");
+        return new OpenAIClient(
+            new ChatClient(
+                model: llmModel ?? "gpt-5-mini",
+                apiKey: apiKey
+            ),
+            new EmbeddingClient(
+                model: embeddingModel ?? "text-embedding-3-small",
+                apiKey: apiKey
+        ));
+    }
+});
 
 // Add CORS services
 builder.Services.AddCors(options =>

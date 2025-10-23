@@ -9,12 +9,14 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Upload, X, Loader2 } from "lucide-react"
 
 export default function CreateDataSourcePage() {
   const router = useRouter()
   const [name, setName] = useState("")
   const [files, setFiles] = useState<File[]>([])
+  const [useQAGeneration, setUseQAGeneration] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadProgress, setUploadProgress] = useState<string>("")
@@ -48,7 +50,7 @@ export default function CreateDataSourcePage() {
       setUploadProgress("Uploading files...")
 
       const { createDataSources } = await import("@/lib/api")
-      const result = await createDataSources(files, name)
+      const result = await createDataSources(files, name, useQAGeneration)
       console.log("Data sources created:", result)
       
       setUploadProgress("Processing complete!")
@@ -105,6 +107,26 @@ export default function CreateDataSourcePage() {
                 className="bg-background border-border text-foreground"
               />
               <p className="text-xs text-muted-foreground">Choose a descriptive name for your data source</p>
+            </div>
+
+            {/* QA Generation Toggle */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="qa-generation" className="text-sm font-medium text-foreground">
+                    QA Generation
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Generate question-answer pairs from the content for better retrieval
+                  </p>
+                </div>
+                <Switch 
+                  id="qa-generation"
+                  checked={useQAGeneration}
+                  onCheckedChange={setUseQAGeneration}
+                  disabled={isSubmitting}
+                />
+              </div>
             </div>
 
             {/* File Upload */}

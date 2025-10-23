@@ -66,11 +66,7 @@ namespace core.Data
         {
             var chunks = new List<Chunk>();
 
-            var filteredContent = _content
-                                    .Where(qa => !string.IsNullOrWhiteSpace(qa.Question) && !string.IsNullOrWhiteSpace(qa.Answer))
-                                    .ToList();
-
-            foreach (var content in filteredContent)
+            foreach (var content in _content)
             {
                 var chunk = new Chunk
                 {
@@ -78,10 +74,7 @@ namespace core.Data
                     Type = DataSourceType.Stream,
                     Value = _filename,
                     Embedding = await embedder.GetEmbedding(content.Question!),
-                    Metadata = new Dictionary<string, string>
-                    {
-                        { "url", content.Url ?? string.Empty }
-                    }
+                    Metadata = []
                 };
 
                 chunks.Add(chunk);
