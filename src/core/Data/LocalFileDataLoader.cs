@@ -1,3 +1,4 @@
+using core.Chunking;
 using core.Embeddings;
 using core.Models;
 using UglyToad.PdfPig;
@@ -5,8 +6,9 @@ using UglyToad.PdfPig.Content;
 
 namespace core.Data
 {
-    public class LocalFileDataLoader(string filePath) : IDataLoader
+    public class LocalFileDataLoader(ITextChunker textChunker, string filePath) : IDataLoader
     {
+        private readonly ITextChunker _textChunker = textChunker;
         private readonly string _filePath = filePath;
         private string _content = string.Empty;
 
@@ -98,7 +100,7 @@ namespace core.Data
                 throw new InvalidOperationException("Content not loaded. Call LoadAsync() before GetContentChunks().");
             }
 
-            var textChunks = TextChunker.ChunkText(_content);
+            var textChunks = _textChunker.ChunkText(_content);
             var chunks = new List<Chunk>();
 
             foreach (var text in textChunks)

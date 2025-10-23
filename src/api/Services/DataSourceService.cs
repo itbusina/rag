@@ -1,4 +1,5 @@
 using core;
+using core.Chunking;
 using core.Data;
 using core.Models;
 using core.Storage;
@@ -7,10 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
-    public class DataSourceService(JoyQueryClient client, DataStorageContext context)
+    public class DataSourceService(JoyQueryClient client, DataStorageContext context, ITextChunker textChunker)
     {
         private readonly JoyQueryClient _client = client;
         private readonly DataStorageContext _context = context;
+        private readonly ITextChunker _textChunker = textChunker;
 
         public async Task<List<DataSource>> GetAllDataSourcesAsync()
         {
@@ -49,7 +51,7 @@ namespace api.Services
                 if (file.Length == 0)
                     continue;
 
-                var dataLoader = new StreamDataLoader(file.FileName, file.OpenReadStream(), 2, 1);
+                var dataLoader = new StreamDataLoader(_textChunker, file.FileName, file.OpenReadStream());
                 var collectionName = await _client.LoadDataAsync(dataLoader);
                 collectionNames.Add(collectionName);
 

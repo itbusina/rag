@@ -12,20 +12,6 @@ namespace core
         private readonly ISummarizer _summarizer = summarizer;
         private readonly IVectorStorage _vectorStorage = vectorStorage;
 
-        public async Task<string> LoadDataAsync(string sourceType, string sourceValue)
-        {
-            IDataLoader dataLoader = sourceType switch
-            {
-                "file" => new LocalFileDataLoader(sourceValue),
-                "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-                "http" => new HttpDataLoader(sourceValue),
-                "sitemap" => new SitemapDataLoader(sourceValue),
-                _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'faq', 'github', 'http', or 'sitemap'."),
-            };
-
-            return await LoadDataAsync(dataLoader);
-        }
-
         public async Task<string> LoadDataAsync(IDataLoader dataLoader)
         {
             // Step 1. Load file content

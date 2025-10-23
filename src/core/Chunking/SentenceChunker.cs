@@ -1,10 +1,13 @@
 using System.Text.RegularExpressions;
 
-namespace core.Data
+namespace core.Chunking
 {
-    public static class TextChunker
+    public class SentenceChunker(int maxSentences = 5, int overlap = 1) : ITextChunker
     {
-        public static List<string> ChunkText(string text, int maxSentences = 5, int overlap = 1)
+        private readonly int _maxSentences = maxSentences;
+        private readonly int _overlap = overlap;
+
+        public List<string> ChunkText(string text)
         {
             // Simple chunker based on sentence boundaries
             var sentencesRegex = @"(?<=[.!?])\s+";
@@ -16,7 +19,7 @@ namespace core.Data
 
             foreach (var sentence in sentences)
             {
-                if (estimate > maxSentences)
+                if (estimate > _maxSentences)
                 {
                     chunks.Add(string.Join(" ", current));
                     current.Clear();
@@ -33,7 +36,7 @@ namespace core.Data
             // Add overlapping context (optional)
             for (int i = 1; i < chunks.Count; i++)
             {
-                var overlapSentences = string.Join(" ", Regex.Split(chunks[i - 1], sentencesRegex).TakeLast(overlap));
+                var overlapSentences = string.Join(" ", Regex.Split(chunks[i - 1], sentencesRegex).TakeLast(_overlap));
                 chunks[i] = overlapSentences + " " + chunks[i];
             }
 
