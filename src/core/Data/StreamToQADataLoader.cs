@@ -147,9 +147,9 @@ namespace core.Data
 
                 try
                 {
-                    var qaPairs = await aIClient.GetResponseAsync<List<FAQModel>>(prompt);
+                    var qaPairs = await aIClient.GetResponseAsync<ContentToQAResponse>(prompt);
 
-                    foreach (var qa in qaPairs ?? [])
+                    foreach (var qa in qaPairs.Responses ?? [])
                     {
                         var chunk = new Chunk
                         {

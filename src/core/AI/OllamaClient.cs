@@ -39,14 +39,12 @@ namespace core.AI
 
         public async Task<T> GetResponseAsync<T>(string prompt) where T : class
         {
-            var jsonSchema = JsonSchemaGenerator.GenerateSchema(typeof(T));
-
             var request = new OllamaRequest
             {
                 Model = _model,
                 Prompt = prompt,
                 Stream = false,
-                Format = jsonSchema
+                Format = JsonSchemaGenerator.GenerateSchema(typeof(T))
             };
 
             var response = await GetResponseAsync(request);
