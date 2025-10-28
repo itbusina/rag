@@ -143,7 +143,7 @@ namespace core.Data
 
             foreach (var text in textChunks)
             {
-                var prompt = $"Create question - answer pairs from the given context. Return a JSON array of objects with 'question' and 'answer' fields. Example: [{{\"question\": \"What is the capital of France?\", \"answer\": \"Paris\"}}]. There should be as much questions and related answers as possible. The answer should be meaningful. Given context: {text}";
+                var prompt = $"Create question - answer pairs from the given context. Create only meaningful pairs. Given context: {text}";
 
                 try
                 {

@@ -17,6 +17,7 @@ builder.Services.AddOpenApi();
 // Core services registrations
 const string OLLAMA_SERVICE_PROVIDER = "ollama";
 const string OPENAI_SERVICE_PROVIDER = "openai";
+const string OPENAI_API_KEY = null;
 
 // Determine service provider
 var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OLLAMA_SERVICE_PROVIDER;
@@ -75,7 +76,7 @@ builder.Services.AddSingleton<IAIClient>(sp =>
     }
     else // default to OpenAI
     {
-        var apiKey = Environment.GetEnvironmentVariable("LLM_API_KEY") ?? throw new InvalidOperationException("LLM_API_KEY environment variable is not set.");
+        var apiKey = OPENAI_API_KEY ?? Environment.GetEnvironmentVariable("LLM_API_KEY") ?? throw new InvalidOperationException("LLM_API_KEY environment variable is not set.");
         return new OpenAIClient(
             apiKey,
             llmModel ?? "gpt-5-mini",
