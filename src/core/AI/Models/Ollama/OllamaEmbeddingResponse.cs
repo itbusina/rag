@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace core.ChatClients.Models
+namespace core.AI.Models.Ollama
 {
     internal class OllamaEmbeddingResponse
     {

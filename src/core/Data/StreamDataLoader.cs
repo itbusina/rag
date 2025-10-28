@@ -1,5 +1,5 @@
+using core.AI;
 using core.Chunking;
-using core.Embeddings;
 using core.Models;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
@@ -130,7 +130,7 @@ namespace core.Data
             await Task.CompletedTask;
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
             if (string.IsNullOrEmpty(_content))
             {
@@ -147,7 +147,7 @@ namespace core.Data
                     Content = text,
                     Type = DataSourceType.Stream,
                     Value = _filename,
-                    Embedding = await embedder.GetEmbedding(text),
+                    Embedding = await aIClient.GetEmbeddingAsync(text),
                     Metadata = new Dictionary<string, string>
                     {
                         { "file_name", _filename }

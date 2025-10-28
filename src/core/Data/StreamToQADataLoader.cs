@@ -1,20 +1,14 @@
-using System.Text.Json;
-using core.ChatClients;
-using core.ChatClients.Models;
+using core.AI;
 using core.Chunking;
 using core.Data.Models;
-using core.Embeddings;
-using core.Helpers;
 using core.Models;
-using OpenAI.Chat;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 
 namespace core.Data
 {
-    public class StreamToQADataLoader(IAIClient aiClient, ITextChunker textChunker, string filename, Stream fileStream) : IDataLoader
+    public class StreamToQADataLoader(ITextChunker textChunker, string filename, Stream fileStream) : IDataLoader
     {
-        private readonly IAIClient _aiClient = aiClient;
         private readonly ITextChunker _textChunker = textChunker;
         private readonly string _filename = filename;
         private readonly Stream _fileStream = fileStream;
@@ -137,7 +131,7 @@ namespace core.Data
             await Task.CompletedTask;
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
             if (string.IsNullOrEmpty(_content))
             {
@@ -149,30 +143,33 @@ namespace core.Data
 
             foreach (var text in textChunks)
             {
-                var messages = new List<AIClientMessage>
-                {
-                    new() { Role = "system", Content = "From the following content, generate a question-answer pairs in JSON format with 'question' and 'answer' fields. Return only the JSON array of such objects." },
-                    new() { Role = "user", Content = text }
-                };
+                var prompt = $"Create question - answer pairs from the given context. Return a JSON array of objects with 'question' and 'answer' fields. Example: [{{\"question\": \"What is the capital of France?\", \"answer\": \"Paris\"}}]. There should be as much questions and related answers as possible. The answer should be meaningful. Given context: {text}";
 
-                var response = await _aiClient.GetChatCompletionAsync(messages);
-                var qaPairs = JsonSerializer.Deserialize<List<FAQModel>>(response, DefaultJsonSerializerOptions.Options);
-
-                foreach (var qa in qaPairs ?? [])
+                try
                 {
-                    var chunk = new Chunk
+                    var qaPairs = await aIClient.GetResponseAsync<List<FAQModel>>(prompt);
+
+                    foreach (var qa in qaPairs ?? [])
                     {
-                        Content = qa.Answer,
-                        Type = DataSourceType.Stream,
-                        Value = _filename,
-                        Embedding = await embedder.GetEmbedding(qa.Question),
-                        Metadata = new Dictionary<string, string>
+                        var chunk = new Chunk
                         {
-                            { "file_name", _filename }
-                        }
-                    };
+                            Content = qa.Answer,
+                            Type = DataSourceType.Stream,
+                            Value = _filename,
+                            Embedding = await aIClient.GetEmbeddingAsync(qa.Question),
+                            Metadata = new Dictionary<string, string>
+                            {
+                                { "question", qa.Question },
+                                { "file_name", _filename }
+                            }
+                        };
 
-                    chunks.Add(chunk);
+                        chunks.Add(chunk);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error generating QA pairs for chunk: {text}. Error: {ex.Message}");
                 }
             }
 

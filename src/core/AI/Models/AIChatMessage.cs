@@ -1,6 +1,6 @@
-namespace core.ChatClients.Models
+namespace core.AI.Models
 {
-    public class AIClientMessage
+    public class AIChatMessage
     {
         public required string Role { get; set; }
         public required string Content { get; set; }

@@ -1,4 +1,4 @@
-using core.Embeddings;
+using core.AI;
 using core.Helpers;
 using core.Models;
 using Octokit;
@@ -106,7 +106,7 @@ namespace core.Data
             }
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
             if (_allComments.Count == 0)
             {
@@ -130,7 +130,7 @@ namespace core.Data
                         Content = commentChunk,
                         Type = DataSourceType.GitHub,
                         Value = _repositoryUrl,
-                        Embedding = await embedder.GetEmbedding(commentChunk),
+                        Embedding = await aIClient.GetEmbeddingAsync(commentChunk),
                         Metadata = new Dictionary<string, string>
                         {
                             { "repository", comment.Repository },

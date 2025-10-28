@@ -1,5 +1,4 @@
 using core;
-using core.ChatClients;
 using core.Chunking;
 using core.Data;
 using core.Models;
@@ -9,12 +8,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
-    public class DataSourceService(JoyQueryClient client, DataStorageContext context, ITextChunker textChunker, IAIClient aiClient)
+    public class DataSourceService(JoyQueryClient client, DataStorageContext context, ITextChunker textChunker)
     {
         private readonly JoyQueryClient _client = client;
         private readonly DataStorageContext _context = context;
         private readonly ITextChunker _textChunker = textChunker;
-        private readonly IAIClient _aiClient = aiClient;
 
         public async Task<List<DataSource>> GetAllDataSourcesAsync()
         {
@@ -54,7 +52,7 @@ namespace api.Services
                     continue;
 
                 IDataLoader dataLoader = useQA
-                    ? new StreamToQADataLoader(_aiClient, _textChunker, file.FileName, file.OpenReadStream())
+                    ? new StreamToQADataLoader(_textChunker, file.FileName, file.OpenReadStream())
                     : new StreamDataLoader(_textChunker, file.FileName, file.OpenReadStream());
 
                 var collectionName = await _client.LoadDataAsync(dataLoader);

@@ -1,4 +1,4 @@
-namespace core.Retrieving
+namespace core.Helpers
 {
     public static class SimilarityHelper
     {

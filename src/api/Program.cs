@@ -1,15 +1,11 @@
 using api.Endpoints;
 using api.Services;
 using core;
-using core.ChatClients;
+using core.AI;
 using core.Chunking;
-using core.Embeddings;
 using core.Storage;
-using core.Summarization;
 using core.VectorStorage;
 using Microsoft.EntityFrameworkCore;
-using OpenAI.Chat;
-using OpenAI.Embeddings;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,43 +14,22 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-// Register EF Core + SQLite
-var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? "rag.db";
-builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={connectionString}"));
-
 // Core services registrations
 const string OLLAMA_SERVICE_PROVIDER = "ollama";
 const string OPENAI_SERVICE_PROVIDER = "openai";
 
-builder.Services.AddKeyedSingleton<IEmbedder>(OLLAMA_SERVICE_PROVIDER, (sp, key) =>
-    new OllamaEmbedder(
-        model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
-        baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
-    )
-);
-builder.Services.AddKeyedSingleton<IEmbedder>(OPENAI_SERVICE_PROVIDER, (sp, key) =>
-    new OpenAIEmbedder(
-        model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "text-embedding-3-small",
-        apiKey: Environment.GetEnvironmentVariable("LLM_API_KEY") ?? ""
-    )
-);
-builder.Services.AddKeyedSingleton<ISummarizer>(OLLAMA_SERVICE_PROVIDER, (sp, key) =>
-    new OllamaSummarizer(
-        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
-        baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
-    )
-);
-builder.Services.AddKeyedSingleton<ISummarizer>(OPENAI_SERVICE_PROVIDER, (sp, key) =>
-    new OpenAISummarizer(
-        model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "gpt-5-mini",
-        apiKey: Environment.GetEnvironmentVariable("LLM_API_KEY") ?? ""
-    )
-);
+// Determine service provider
+var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OLLAMA_SERVICE_PROVIDER;
+
+// Register EF Core + SQLite
+var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? "rag.db";
+builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={connectionString}"));
+
 builder.Services.AddSingleton<IVectorStorage>((sp) =>
     new QdrantVectorStorage(
         host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
         apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
-        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.7f //TODO: adjust threshold based on your content
+        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.5f //TODO: adjust threshold based on your content
     )
 );
 
@@ -79,12 +54,9 @@ builder.Services.AddSingleton<ITextChunker>((sp) =>
 // Register JoyQueryClient
 builder.Services.AddSingleton<JoyQueryClient>((sp) =>
 {
-    var provider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OLLAMA_SERVICE_PROVIDER;
-    var embedder = sp.GetRequiredKeyedService<IEmbedder>(provider);
-    var summarizer = sp.GetRequiredKeyedService<ISummarizer>(provider);
     var vectorStorage = sp.GetRequiredService<IVectorStorage>();
-
-    return new JoyQueryClient(embedder, summarizer, vectorStorage);
+    var aiClient = sp.GetRequiredService<IAIClient>();
+    return new JoyQueryClient(vectorStorage, aiClient);
 });
 builder.Services.AddScoped<DataSourceService>();
 builder.Services.AddSingleton<IAIClient>(sp =>
@@ -92,7 +64,6 @@ builder.Services.AddSingleton<IAIClient>(sp =>
     var llmModel = Environment.GetEnvironmentVariable("LLM_MODEL");
     var embeddingModel = Environment.GetEnvironmentVariable("EMBEDDING_MODEL");
     
-    var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OPENAI_SERVICE_PROVIDER;
     if (serviceProvider == OLLAMA_SERVICE_PROVIDER)
     {
         var llmEndpoint = Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434";
@@ -106,14 +77,10 @@ builder.Services.AddSingleton<IAIClient>(sp =>
     {
         var apiKey = Environment.GetEnvironmentVariable("LLM_API_KEY") ?? throw new InvalidOperationException("LLM_API_KEY environment variable is not set.");
         return new OpenAIClient(
-            new ChatClient(
-                model: llmModel ?? "gpt-5-mini",
-                apiKey: apiKey
-            ),
-            new EmbeddingClient(
-                model: embeddingModel ?? "text-embedding-3-small",
-                apiKey: apiKey
-        ));
+            apiKey,
+            llmModel ?? "gpt-5-mini",
+            embeddingModel ?? "text-embedding-3-small"
+        );
     }
 });
 

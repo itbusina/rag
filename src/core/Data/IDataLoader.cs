@@ -1,4 +1,4 @@
-using core.Embeddings;
+using core.AI;
 using core.Models;
 
 namespace core.Data
@@ -7,6 +7,6 @@ namespace core.Data
     {
         public Task LoadAsync();
         
-        public Task<List<Chunk>> GetContentChunks(IEmbedder embedder);
+        public Task<List<Chunk>> GetContentChunks(IAIClient aIClient);
     }
 }
