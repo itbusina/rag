@@ -1,6 +1,6 @@
 using System.Text.Json;
+using core.AI;
 using core.Data.Models;
-using core.Embeddings;
 using core.Models;
 
 namespace core.Data
@@ -62,26 +62,19 @@ namespace core.Data
             Console.WriteLine($"Successfully loaded text file from stream.");
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
             var chunks = new List<Chunk>();
 
-            var filteredContent = _content
-                                    .Where(qa => !string.IsNullOrWhiteSpace(qa.Question) && !string.IsNullOrWhiteSpace(qa.Answer))
-                                    .ToList();
-
-            foreach (var content in filteredContent)
+            foreach (var content in _content)
             {
                 var chunk = new Chunk
                 {
                     Content = content.Answer!,
                     Type = DataSourceType.Stream,
                     Value = _filename,
-                    Embedding = await embedder.GetEmbedding(content.Question!),
-                    Metadata = new Dictionary<string, string>
-                    {
-                        { "url", content.Url ?? string.Empty }
-                    }
+                    Embedding = await aIClient.GetEmbeddingAsync(content.Question!),
+                    Metadata = []
                 };
 
                 chunks.Add(chunk);

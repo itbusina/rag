@@ -56,14 +56,19 @@ export class DataSourcesApiClient {
   /**
    * Upload files to create data sources
    */
-  async create(files: File[], name: string): Promise<string[]> {
+  async create(files: File[], name: string, useQAGeneration: boolean = false): Promise<string[]> {
     const formData = new FormData()
     files.forEach((file) => {
       formData.append("files", file)
     })
     formData.append("name", name)
 
-    const response = await fetch(`${this.baseUrl}/datasources?type=file`, {
+    const queryParams = new URLSearchParams({
+      type: "file",
+      useQA: useQAGeneration.toString(),
+    })
+
+    const response = await fetch(`${this.baseUrl}/datasources?${queryParams}`, {
       method: "POST",
       body: formData,
     })
@@ -171,7 +176,7 @@ export const dataSourcesApi = new DataSourcesApiClient()
 // Export convenience functions
 export const getDataSources = () => dataSourcesApi.getAll()
 export const getDataSource = (id: string) => dataSourcesApi.getById(id)
-export const createDataSources = (files: File[], name: string) => dataSourcesApi.create(files, name)
+export const createDataSources = (files: File[], name: string, useQAGeneration: boolean = false) => dataSourcesApi.create(files, name, useQAGeneration)
 export const createFAQDataSource = (files: File[], name: string) => dataSourcesApi.createFAQ(files, name)
 export const createConfluenceDataSource = (params: {
   name: string

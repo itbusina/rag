@@ -43,7 +43,7 @@ namespace api.Services
             return true;
         }
 
-        public async Task<List<string>> AddFileDataSourceAsync(string name, IFormFileCollection files)
+        public async Task<List<string>> AddFileDataSourceAsync(string name, IFormFileCollection files, bool useQA)
         {
             var collectionNames = new List<string>();
             foreach (var file in files)
@@ -51,7 +51,10 @@ namespace api.Services
                 if (file.Length == 0)
                     continue;
 
-                var dataLoader = new StreamDataLoader(_textChunker, file.FileName, file.OpenReadStream());
+                IDataLoader dataLoader = useQA
+                    ? new StreamToQADataLoader(_textChunker, file.FileName, file.OpenReadStream())
+                    : new StreamDataLoader(_textChunker, file.FileName, file.OpenReadStream());
+
                 var collectionName = await _client.LoadDataAsync(dataLoader);
                 collectionNames.Add(collectionName);
 

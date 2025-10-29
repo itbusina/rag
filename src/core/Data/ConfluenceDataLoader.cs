@@ -2,7 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using core.Embeddings;
+using core.AI;
 using core.Models;
 
 namespace core.Data
@@ -183,7 +183,7 @@ namespace core.Data
             _pages = await GetPageWithChildrenAsync(parentPageId);
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
             if (_pages == null)
                 throw new InvalidOperationException("Pages have not been loaded. Call LoadAsync() before GetContentChunks().");
@@ -207,7 +207,7 @@ namespace core.Data
                         Content = chunkText,
                         Type = DataSourceType.Confluence,
                         Value = page.Key,
-                        Embedding = await embedder.GetEmbedding(chunkText),
+                        Embedding = await aIClient.GetEmbeddingAsync(chunkText),
                         Metadata = new Dictionary<string, string>
                         {
                             { "url", page.Key }

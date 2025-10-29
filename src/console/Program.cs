@@ -1,7 +1,8 @@
-﻿using core;
+﻿using System.Globalization;
+using core;
+using core.AI;
 using core.Data;
-using core.Embeddings;
-using core.Summarization;
+using core.Helpers;
 using core.VectorStorage;
 
 class Program
@@ -29,18 +30,15 @@ class Program
         var sourceValue = args[1];
 
         var joyQueryClient = new JoyQueryClient(
-            new OllamaEmbedder(
-                model: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "nomic-embed-text",
-                baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
-            ),
-            new OllamaSummarizer(
-                model: Environment.GetEnvironmentVariable("SUMMARIZING_MODEL") ?? "llama3.1:8b",
-                baseUrl: Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434"
-            ),
             new QdrantVectorStorage(
                 host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
                 apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
-                scoreThreshold: 0.7f // TODO: adjust threshold based on your content
+                scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.5f // TODO: adjust threshold based on your content
+            ),
+            new OpenAIClient(
+                apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "",
+                completionModel: Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5-mini",
+                embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "text-embedding-3-small"
             )
         );
 
@@ -49,12 +47,16 @@ class Program
             overlap: int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 50
         );
 
+        var openAIHelper = new OpenAIHelper(
+            model: Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5-mini",
+            apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? ""
+        );
+
         IDataLoader dataLoader = source switch
         {
             "file" => new LocalFileDataLoader(textChunker, sourceValue),
             "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-            "http" => new HttpDataLoader(sourceValue),
-            "sitemap" => new SitemapDataLoader(sourceValue),
+            "web" => new WebPageToQADataLoader(openAIHelper, sourceValue),
             _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'faq', 'github', 'http', or 'sitemap'."),
         };
 

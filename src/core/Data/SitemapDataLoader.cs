@@ -1,13 +1,16 @@
-using core.Embeddings;
+using core.AI;
+using core.Data.Models;
+using core.Helpers;
 using core.Models;
 using System.Xml.Linq;
 
 namespace core.Data
 {
-    public class SitemapDataLoader(string sitemapUrl) : IDataLoader
+    public class SitemapDataLoader(OpenAIHelper client, string sitemapUrl) : IDataLoader
     {
+        private readonly OpenAIHelper _client = client;
         private readonly string _sitemapUrl = sitemapUrl;
-        private readonly List<(string, string)> _allContentBlocks = [];
+        private readonly Dictionary<string, List<FAQModel>> _sitemapPages = [];
         private static readonly HttpClient _httpClient = new();
 
         public async Task LoadAsync()
@@ -35,14 +38,14 @@ namespace core.Data
                 {
                     try
                     {
-                        var httpLoader = new HttpDataLoader(url);
-                        await httpLoader.LoadAsync();
-                        return (httpLoader.GetContentBlocks(), url);
+                        var webQALoader = new WebPageToQADataLoader(_client, url);
+                        await webQALoader.LoadAsync();
+                        return new KeyValuePair<string, List<FAQModel>>(url, webQALoader.GetContentBlocks());
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error loading URL {url}: {ex.Message}");
-                        return ([], url);
+                        return new KeyValuePair<string, List<FAQModel>>(url, []);
                     }
                 }).ToList();
 
@@ -50,12 +53,12 @@ namespace core.Data
                 var results = await Task.WhenAll(loadTasks);
 
                 // Aggregate all content blocks
-                foreach (var contentBlocks in results)
+                foreach (var result in results)
                 {
-                    _allContentBlocks.AddRange(contentBlocks.Item1.Select(block => (block, contentBlocks.url)));
+                    _sitemapPages.Add(result.Key, result.Value);
                 }
 
-                Console.WriteLine($"Successfully loaded {_allContentBlocks.Count} total content blocks from {urls.Count} URLs.");
+                Console.WriteLine($"Successfully loaded {_sitemapPages.Count} total content blocks from {urls.Count} URLs.");
             }
             catch (HttpRequestException ex)
             {
@@ -153,30 +156,33 @@ namespace core.Data
             return urls;
         }
 
-        public async Task<List<Chunk>> GetContentChunks(IEmbedder embedder)
+        public async Task<List<Chunk>> GetContentChunks(IAIClient aIClient)
         {
-            if (_allContentBlocks.Count == 0)
+            if (_sitemapPages.Count == 0)
             {
                 throw new InvalidOperationException("No content loaded. Call LoadAsync() before GetContentChunks().");
             }
 
             var chunks = new List<Chunk>();
             
-            foreach (var content in _allContentBlocks)
+            foreach (var page in _sitemapPages)
             {
-                var chunk = new Chunk
+                foreach (var pair in page.Value)
                 {
-                    Content = content.Item1,
-                    Type = DataSourceType.Sitemap,
-                    Value = _sitemapUrl,
-                    Embedding = await embedder.GetEmbedding(content.Item1),
-                    Metadata = new Dictionary<string, string>
+                    var chunk = new Chunk
                     {
-                        { "source_url", content.Item2 }
-                    }
-                };
+                        Content = pair.Answer,
+                        Type = DataSourceType.Sitemap,
+                        Value = _sitemapUrl,
+                        Embedding = await aIClient.GetEmbeddingAsync(pair.Question),
+                        Metadata = new Dictionary<string, string>
+                        {
+                            { "source_url", page.Key }
+                        }
+                    };
 
-                chunks.Add(chunk);
+                    chunks.Add(chunk);
+                }
             }
 
             return chunks;
