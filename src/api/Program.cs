@@ -17,73 +17,79 @@ builder.Services.AddOpenApi();
 // Core services registrations
 const string OLLAMA_SERVICE_PROVIDER = "ollama";
 const string OPENAI_SERVICE_PROVIDER = "openai";
-const string OPENAI_API_KEY = null;
 
-// Determine service provider
-var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? OLLAMA_SERVICE_PROVIDER;
+// defaults
+const string DEFAULT_OPENAI_API_KEY = "sk-svc..";
+const string DEFAULT_OPENAI_MODEL = "gpt-5-mini";
+const string DEFAULT_OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
+const string DEFAULT_OLLAMA_MODEL = "llama3.1:8b";
+const string DEFAULT_OLLAMA_EMBEDDING_MODEL = "nomic-embed-text";
+const string DEFAULT_OLLAMA_ENDPOINT = "http://localhost:11434";
+const string DEFAULT_DB_CONNECTION_STRING = "rag.db";
+const string DEFAULT_QDRANT_HOST = "localhost";
+const string DEFAULT_QDRANT_API_KEY = "";
+const float DEFAULT_QDRANT_SCORE_THRESHOLD = 0.5f;
+const string DEFAULT_TEXT_CHUNKER_TYPE = "recursive";
+const int DEFAULT_TEXT_CHUNK_SIZE = 1000;
+const int DEFAULT_TEXT_CHUNK_OVERLAP = 100;
+const int DEFAULT_SENTENCE_CHUNK_SIZE = 5;
+const int DEFAULT_SENTENCE_CHUNK_OVERLAP = 1;
+
+const string DEFAULT_SERVICE_PROVIDER = OPENAI_SERVICE_PROVIDER;
+const string DEFAULT_LLM_MODEL = DEFAULT_OPENAI_MODEL;
+const string DEFAULT_LLM_EMBEDDING_MODEL = DEFAULT_OPENAI_EMBEDDING_MODEL;
+const string DEFAULT_LLM_API_KEY = DEFAULT_OPENAI_API_KEY;
+
+var serviceProvider = Environment.GetEnvironmentVariable("SERVICE_PROVIDER")?.ToLower() ?? DEFAULT_SERVICE_PROVIDER;
+var apiKey = Environment.GetEnvironmentVariable("LLM_API_KEY") ?? DEFAULT_LLM_API_KEY;
+var model = Environment.GetEnvironmentVariable("LLM_MODEL") ?? DEFAULT_LLM_MODEL;
+var embeddingModel = Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? DEFAULT_LLM_EMBEDDING_MODEL;
+var llmEndpoint = Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? DEFAULT_OLLAMA_ENDPOINT;
 
 // Register EF Core + SQLite
-var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? "rag.db";
+var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? DEFAULT_DB_CONNECTION_STRING;
 builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={connectionString}"));
 
 builder.Services.AddSingleton<IVectorStorage>((sp) =>
     new QdrantVectorStorage(
-        host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
-        apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
-        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.5f //TODO: adjust threshold based on your content
+        host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? DEFAULT_QDRANT_HOST,
+        apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? DEFAULT_QDRANT_API_KEY,
+        scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : DEFAULT_QDRANT_SCORE_THRESHOLD
     )
 );
 
 // text chunker registrations
+builder.Services.AddSingleton<SentenceChunker>(sp =>
+{
+    int maxSentences = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_SIZE"), out var max) ? max : DEFAULT_SENTENCE_CHUNK_SIZE;
+    int overlap = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_OVERLAP"), out var ovl) ? ovl : DEFAULT_SENTENCE_CHUNK_OVERLAP;
+    return new SentenceChunker(maxSentences, overlap);
+});
+builder.Services.AddSingleton<RecursiveTextChunker>(sp =>
+{
+    int chunkSize = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : DEFAULT_TEXT_CHUNK_SIZE;
+    int overlap = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : DEFAULT_TEXT_CHUNK_OVERLAP;
+    return new RecursiveTextChunker(chunkSize, overlap);
+});
 builder.Services.AddSingleton<ITextChunker>((sp) =>
 {
-    var chunkerType = Environment.GetEnvironmentVariable("TEXT_CHUNKER_TYPE")?.ToLower() ?? "recursive";
-    if(chunkerType == "sentence")
-    {
-        int maxSentences = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_SIZE"), out var max) ? max : 5;
-        int overlap = int.TryParse(Environment.GetEnvironmentVariable("SENTENCE_CHUNK_OVERLAP"), out var ovl) ? ovl : 1;
-        return new SentenceChunker(maxSentences, overlap);
-    }
-    else // default to recursive
-    {
-        int chunkSize = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_SIZE"), out var size) ? size : 1000;
-        int overlap = int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 100;
-        return new RecursiveTextChunker(chunkSize, overlap);
-    }
+    var chunkerType = Environment.GetEnvironmentVariable("TEXT_CHUNKER_TYPE")?.ToLower() ?? DEFAULT_TEXT_CHUNKER_TYPE;
+    return chunkerType == "sentence"
+        ? sp.GetRequiredService<SentenceChunker>() 
+        : sp.GetRequiredService<RecursiveTextChunker>();
 });
 
-// Register JoyQueryClient
-builder.Services.AddSingleton<JoyQueryClient>((sp) =>
-{
-    var vectorStorage = sp.GetRequiredService<IVectorStorage>();
-    var aiClient = sp.GetRequiredService<IAIClient>();
-    return new JoyQueryClient(vectorStorage, aiClient);
-});
-builder.Services.AddScoped<DataSourceService>();
+builder.Services.AddSingleton<JoyQueryClient>();
+builder.Services.AddSingleton<OpenAIClient>(sp => new OpenAIClient(apiKey, model, embeddingModel));
+builder.Services.AddSingleton<OllamaClient>(sp => new OllamaClient(model, embeddingModel, llmEndpoint));
 builder.Services.AddSingleton<IAIClient>(sp =>
 {
-    var llmModel = Environment.GetEnvironmentVariable("LLM_MODEL");
-    var embeddingModel = Environment.GetEnvironmentVariable("EMBEDDING_MODEL");
-    
-    if (serviceProvider == OLLAMA_SERVICE_PROVIDER)
-    {
-        var llmEndpoint = Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? "http://localhost:11434";
-        return new OllamaClient(
-            model: llmModel ?? "llama3.1:8b",
-            embeddingModel: embeddingModel ?? "nomic-embed-text",
-            baseUrl: llmEndpoint 
-        );
-    }
-    else // default to OpenAI
-    {
-        var apiKey = OPENAI_API_KEY ?? Environment.GetEnvironmentVariable("LLM_API_KEY") ?? throw new InvalidOperationException("LLM_API_KEY environment variable is not set.");
-        return new OpenAIClient(
-            apiKey,
-            llmModel ?? "gpt-5-mini",
-            embeddingModel ?? "text-embedding-3-small"
-        );
-    }
+    return serviceProvider == OLLAMA_SERVICE_PROVIDER
+        ? sp.GetRequiredService<OllamaClient>()
+        : sp.GetRequiredService<OpenAIClient>();
 });
+
+builder.Services.AddScoped<DataSourceService>();
 
 // Add CORS services
 builder.Services.AddCors(options =>

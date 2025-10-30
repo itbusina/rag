@@ -29,6 +29,7 @@ export {
   createFAQDataSource,
   createConfluenceDataSource,
   createGitHubDataSource,
+  createSitemapDataSource,
   deleteDataSource,
   getDataSourceTypeLabel,
   DataSourceType,

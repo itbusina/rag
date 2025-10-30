@@ -2,7 +2,6 @@
 using core;
 using core.AI;
 using core.Data;
-using core.Helpers;
 using core.VectorStorage;
 
 class Program
@@ -29,17 +28,19 @@ class Program
         var source = args[0];
         var sourceValue = args[1];
 
+        var openAIClient = new OpenAIClient(
+                apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "",
+                completionModel: Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5-mini",
+                embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "text-embedding-3-small"
+            );
+
         var joyQueryClient = new JoyQueryClient(
             new QdrantVectorStorage(
                 host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? "localhost",
                 apiKey: Environment.GetEnvironmentVariable("QDRANT_API_KEY") ?? "",
                 scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : 0.5f // TODO: adjust threshold based on your content
             ),
-            new OpenAIClient(
-                apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "",
-                completionModel: Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5-mini",
-                embeddingModel: Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? "text-embedding-3-small"
-            )
+            openAIClient
         );
 
         var textChunker = new core.Chunking.RecursiveTextChunker(
@@ -47,16 +48,11 @@ class Program
             overlap: int.TryParse(Environment.GetEnvironmentVariable("TEXT_CHUNK_OVERLAP"), out var ovl) ? ovl : 50
         );
 
-        var openAIHelper = new OpenAIHelper(
-            model: Environment.GetEnvironmentVariable("OPENAI_MODEL") ?? "gpt-5-mini",
-            apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? ""
-        );
-
         IDataLoader dataLoader = source switch
         {
             "file" => new LocalFileDataLoader(textChunker, sourceValue),
             "github" => new GitHubDataLoader(sourceValue), // Optional: Set GITHUB_TOKEN environment variable for higher API rate limits
-            "web" => new WebPageToQADataLoader(openAIHelper, sourceValue),
+            "web" => new WebPageToQADataLoader(openAIClient, sourceValue),
             _ => throw new InvalidOperationException("Unsupported data source. Use 'file', 'faq', 'github', 'http', or 'sitemap'."),
         };
 
