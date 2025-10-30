@@ -8,17 +8,9 @@ using core.VectorStorage;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-
-// Core services registrations
+// default parameters
 const string OLLAMA_SERVICE_PROVIDER = "ollama";
 const string OPENAI_SERVICE_PROVIDER = "openai";
-
-// defaults
 const string DEFAULT_OPENAI_API_KEY = "sk-svc..";
 const string DEFAULT_OPENAI_MODEL = "gpt-5-mini";
 const string DEFAULT_OPENAI_EMBEDDING_MODEL = "text-embedding-3-small";
@@ -45,11 +37,12 @@ var apiKey = Environment.GetEnvironmentVariable("LLM_API_KEY") ?? DEFAULT_LLM_AP
 var model = Environment.GetEnvironmentVariable("LLM_MODEL") ?? DEFAULT_LLM_MODEL;
 var embeddingModel = Environment.GetEnvironmentVariable("EMBEDDING_MODEL") ?? DEFAULT_LLM_EMBEDDING_MODEL;
 var llmEndpoint = Environment.GetEnvironmentVariable("LLM_ENDPOINT") ?? DEFAULT_OLLAMA_ENDPOINT;
+var sqLiteConnectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? DEFAULT_DB_CONNECTION_STRING;
 
-// Register EF Core + SQLite
-var connectionString = Environment.GetEnvironmentVariable("DATA_STORAGE_CONNECTION_STRING") ?? DEFAULT_DB_CONNECTION_STRING;
-builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={connectionString}"));
+// Add services to the container.
+var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<DataStorageContext>(options => options.UseSqlite($"Data Source={sqLiteConnectionString}"));
 builder.Services.AddSingleton<IVectorStorage>((sp) =>
     new QdrantVectorStorage(
         host: Environment.GetEnvironmentVariable("QDRANT_HOST") ?? DEFAULT_QDRANT_HOST,
@@ -57,7 +50,6 @@ builder.Services.AddSingleton<IVectorStorage>((sp) =>
         scoreThreshold: float.TryParse(Environment.GetEnvironmentVariable("QDRANT_SCORE_THRESHOLD"), CultureInfo.InvariantCulture, out var threshold) ? threshold : DEFAULT_QDRANT_SCORE_THRESHOLD
     )
 );
-
 // text chunker registrations
 builder.Services.AddSingleton<SentenceChunker>(sp =>
 {
@@ -78,7 +70,6 @@ builder.Services.AddSingleton<ITextChunker>((sp) =>
         ? sp.GetRequiredService<SentenceChunker>() 
         : sp.GetRequiredService<RecursiveTextChunker>();
 });
-
 builder.Services.AddSingleton<JoyQueryClient>();
 builder.Services.AddSingleton<OpenAIClient>(sp => new OpenAIClient(apiKey, model, embeddingModel));
 builder.Services.AddSingleton<OllamaClient>(sp => new OllamaClient(model, embeddingModel, llmEndpoint));
@@ -88,11 +79,11 @@ builder.Services.AddSingleton<IAIClient>(sp =>
         ? sp.GetRequiredService<OllamaClient>()
         : sp.GetRequiredService<OpenAIClient>();
 });
-
 builder.Services.AddScoped<DataSourceService>();
 
-// Add CORS services
-builder.Services.AddCors(options =>
+// Application registrations
+builder.Services.AddOpenApi(); // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddCors(options => // Add CORS services
 {
     options.AddDefaultPolicy(policy =>
     {
@@ -111,23 +102,16 @@ using (var scope = app.Services.CreateScope())
     db.Database.EnsureCreated();
 }
 
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
-// Enable static file hosting from wwwroot
-app.UseDefaultFiles(); // serves index.html automatically
-app.UseStaticFiles();
-
-// Enable CORS
+app.UseDefaultFiles(); // Serves index.html automatically
+app.UseStaticFiles(); // Enable static file hosting from wwwroot
 app.UseCors();
-
 app.UseHttpsRedirection();
-
 app.InitDataSourcesEndpoints();
 app.InitAssistantEndpoints();
-
 app.Run();
