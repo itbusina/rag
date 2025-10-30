@@ -129,6 +129,11 @@ export default function DataSourcesPage() {
                       Add GitHub
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/data-sources/sitemap/create" className="cursor-pointer">
+                      Add Sitemap
+                    </Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

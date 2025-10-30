@@ -1,4 +1,5 @@
 using core;
+using core.AI;
 using core.Chunking;
 using core.Data;
 using core.Models;
@@ -8,11 +9,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace api.Services
 {
-    public class DataSourceService(JoyQueryClient client, DataStorageContext context, ITextChunker textChunker)
+    public class DataSourceService(JoyQueryClient client, DataStorageContext context, ITextChunker textChunker, OpenAIClient openAIClient)
     {
         private readonly JoyQueryClient _client = client;
         private readonly DataStorageContext _context = context;
         private readonly ITextChunker _textChunker = textChunker;
+        private readonly OpenAIClient _openAIClient = openAIClient;
 
         public async Task<List<DataSource>> GetAllDataSourcesAsync()
         {
@@ -129,6 +131,24 @@ namespace api.Services
                 CollectionName = collectionName,
                 DataSourceType = DataSourceType.GitHub,
                 DataSourceValue = repoUrl,
+                CreatedDate = DateTime.UtcNow
+            });
+            await _context.SaveChangesAsync();
+
+            return [collectionName];
+        }
+
+        internal async Task<List<string>> AddSitemapDataSourceAsync(string name, string sitemapUrl)
+        {
+            var dataLoader = new SitemapDataLoader(_openAIClient, sitemapUrl);
+            var collectionName = await _client.LoadDataAsync(dataLoader);
+
+            _context.DataSources.Add(new DataSource
+            {
+                Name = name,
+                CollectionName = collectionName,
+                DataSourceType = DataSourceType.Sitemap,
+                DataSourceValue = sitemapUrl,
                 CreatedDate = DateTime.UtcNow
             });
             await _context.SaveChangesAsync();

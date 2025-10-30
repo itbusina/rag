@@ -1,14 +1,13 @@
 using core.AI;
 using core.Data.Models;
-using core.Helpers;
 using core.Models;
 using System.Xml.Linq;
 
 namespace core.Data
 {
-    public class SitemapDataLoader(OpenAIHelper client, string sitemapUrl) : IDataLoader
+    public class SitemapDataLoader(OpenAIClient openAIClient, string sitemapUrl) : IDataLoader
     {
-        private readonly OpenAIHelper _client = client;
+        private readonly OpenAIClient _openAIClient = openAIClient;
         private readonly string _sitemapUrl = sitemapUrl;
         private readonly Dictionary<string, List<FAQModel>> _sitemapPages = [];
         private static readonly HttpClient _httpClient = new();
@@ -38,7 +37,7 @@ namespace core.Data
                 {
                     try
                     {
-                        var webQALoader = new WebPageToQADataLoader(_client, url);
+                        var webQALoader = new WebPageToQADataLoader(_openAIClient, url);
                         await webQALoader.LoadAsync();
                         return new KeyValuePair<string, List<FAQModel>>(url, webQALoader.GetContentBlocks());
                     }

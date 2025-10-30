@@ -37,7 +37,7 @@ namespace core.AI
             return await GetResponseAsync(request);
         }
 
-        public async Task<T> GetResponseAsync<T>(string prompt) where T : class
+        public async Task<T> GetResponseAsync<T>(string prompt, object[]? tools) where T : class
         {
             var request = new OllamaRequest
             {

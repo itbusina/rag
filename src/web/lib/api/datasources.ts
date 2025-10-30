@@ -62,10 +62,10 @@ export class DataSourcesApiClient {
       formData.append("files", file)
     })
     formData.append("name", name)
+    formData.append("useQA", useQAGeneration.toString())
 
     const queryParams = new URLSearchParams({
       type: "file",
-      useQA: useQAGeneration.toString(),
     })
 
     const response = await fetch(`${this.baseUrl}/datasources?${queryParams}`, {
@@ -157,6 +157,29 @@ export class DataSourcesApiClient {
   }
 
   /**
+   * Create a Sitemap data source
+   */
+  async createSitemap(params: {
+    name: string
+    sitemapUrl: string
+  }): Promise<string> {
+    const formData = new FormData()
+    formData.append("name", params.name)
+    formData.append("url", params.sitemapUrl)
+
+    const response = await fetch(`${this.baseUrl}/datasources?type=sitemap`, {
+      method: "POST",
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to create Sitemap data source: ${response.statusText}`)
+    }
+
+    return response.json()
+  }
+
+  /**
    * Delete a data source
    */
   async delete(id: string): Promise<void> {
@@ -189,6 +212,10 @@ export const createGitHubDataSource = (params: {
   repositoryUrl: string
   accessToken?: string
 }) => dataSourcesApi.createGitHub(params)
+export const createSitemapDataSource = (params: {
+  name: string
+  sitemapUrl: string
+}) => dataSourcesApi.createSitemap(params)
 export const deleteDataSource = (id: string) => dataSourcesApi.delete(id)
 
 // Helper function to get data source type label
