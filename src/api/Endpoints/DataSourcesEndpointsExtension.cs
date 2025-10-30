@@ -10,7 +10,7 @@ namespace api.Endpoints
     {
         public static void InitDataSourcesEndpoints(this WebApplication app)
         {
-            app.MapPost("/datasources", async ([FromQuery] string type, [FromQuery] bool useQA, HttpRequest request, DataSourceService service, DataStorageContext context) =>
+            app.MapPost("/datasources", async ([FromQuery] string type, HttpRequest request, DataSourceService service, DataStorageContext context) =>
             {
                 var form = await request.ReadFormAsync();
                 var name = form["name"].ToString();
@@ -22,10 +22,11 @@ namespace api.Endpoints
 
                 var collectionNames = type switch
                 {
-                    "file" => await service.AddFileDataSourceAsync(name, form.Files, useQA),
+                    "file" => await service.AddFileDataSourceAsync(name, form.Files, bool.Parse(form["useQA"].ToString())),
                     "faq" => await service.AddFAQDataSourceAsync(name, form.Files),
                     "confluence" => await service.AddConfluenceDataSourceAsync(name, form["url"].ToString(), form["token"].ToString(), form["parentPageId"].ToString()),
                     "github" => await service.AddGitHubDataSourceAsync(name, form["url"].ToString(), form["token"].ToString()),
+                    "sitemap" => await service.AddSitemapDataSourceAsync(name, form["url"].ToString()),
                     _ => throw new NotSupportedException($"Data source type '{type}' is not supported")
                 };
 

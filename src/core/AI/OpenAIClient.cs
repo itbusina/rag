@@ -29,7 +29,7 @@ namespace core.AI
             return await GetResponseAsync(request);
         }
 
-        public async Task<T> GetResponseAsync<T>(string prompt) where T : class
+        public async Task<T> GetResponseAsync<T>(string prompt, object[]? tools = null) where T : class
         {
             var request = new OpenAIResponseRequest
             {
@@ -44,6 +44,7 @@ namespace core.AI
                         schema = JsonSchemaGenerator.GenerateSchema(typeof(T))
                     }
                 },
+                Tools = tools
             };
 
             var json = await GetResponseAsync(request);

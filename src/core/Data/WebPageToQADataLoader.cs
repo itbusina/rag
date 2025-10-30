@@ -1,14 +1,13 @@
 using core.AI;
 using core.Data.Models;
-using core.Helpers;
 using core.Models;
 
 namespace core.Data
 {
     //TODO: works with OpenAI ChatClient only for now to be able to call web search tool via openai API. Could be extended to other llm have web search capabilities
-    public class WebPageToQADataLoader(OpenAIHelper client, string url) : IDataLoader
+    public class WebPageToQADataLoader(OpenAIClient openAIClient, string url) : IDataLoader
     {
-        private readonly OpenAIHelper _client = client;
+        private readonly OpenAIClient _openAIClient = openAIClient;
         private readonly string _url = url;
         private readonly string _prompt = $"Load the web page from {url} and create a list of question-answer pairs based on the page content. Return in JSON array format with 'question' and 'answer' fields.";
         private readonly List<FAQModel> _qaPairs = [];
@@ -19,9 +18,12 @@ namespace core.Data
             {
                 Console.WriteLine($"Loading web page to QA pairs from: {_url}");
 
-                var response = await _client.GetResponseWithWebSearchAsync<ContentToQAResponse>(_prompt);
-                var pairs = response?.Responses ?? [];
+                var response = await _openAIClient.GetResponseAsync<ContentToQAResponse>(_prompt,
+                [
+                    new { type = "web_search", search_context_size = "high" }
+                ]);
 
+                var pairs = response?.Responses ?? [];
                 _qaPairs.AddRange(pairs);
             }
             catch (Exception ex)
