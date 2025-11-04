@@ -64,6 +64,7 @@ namespace core.AI
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"Error. Ollama request: {JsonSerializer.Serialize(request)}");
                 throw new Exception($"Failed to connect to Ollama at {_baseUrl}. Make sure Ollama is running. Error: {ex.Message}", ex);
             }
         }
@@ -94,6 +95,7 @@ namespace core.AI
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"Error. Ollama request: {JsonSerializer.Serialize(request)}");
                 throw new Exception($"Failed to connect to Ollama at {_baseUrl}. Make sure Ollama is running. Error: {ex.Message}", ex);
             }
         }
@@ -118,6 +120,7 @@ namespace core.AI
             }
             catch (HttpRequestException ex)
             {
+                Console.WriteLine($"Error. Ollama request: {JsonSerializer.Serialize(request)}");
                 throw new Exception($"Failed to connect to Ollama at {_baseUrl}. Make sure Ollama is running. Error: {ex.Message}", ex);
             }
         }
