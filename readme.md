@@ -7,7 +7,7 @@ This is a Retrieval-Augmented Generation (RAG) application built with .NET 9 and
 The easiest way to run the entire application is using Docker Compose:
 
 ```bash
-docker-compose up
+docker compose -f 'docker-compose.yml' up -d --build 
 ```
 
 This will:
@@ -27,18 +27,9 @@ To connect the RAG application running in Docker to your local Ollama instance:
 
 1. Install and run Ollama locally (see Manual Setup section below)
 2. Update the Ollama URL in the API configuration to: `http://host.docker.internal:11434`
+3. Disable Ollama which may run in docker on the same port.
 
 This setup provides significantly better performance for embeddings and model inference on macOS.
-
-### Stopping the services
-```bash
-docker-compose down
-```
-
-### View logs
-```bash
-docker-compose logs -f
-```
 
 ---
 
@@ -93,12 +84,10 @@ Open the chat for the assistant and start searching across the data sources.
 3. Setup OpenAI account
 4. Create OpenAI service account https://platform.openai.com/api-keys
 5. Deploy the api application to cloud (Azure) with docker
-6. Configure environment variables to point OpenAI API and Qdrant, set SERVICE_PROVIDER to openai
-7. Set DATA_STORAGE_CONNECTION_STRING to /home/rag.db. /home is a folder which is preserved and not removed after service restart.
-7. Run the application.
-
+6. Configure environment variables to point OpenAI API and qdrant, set ```SERVICE_PROVIDER``` to openai
+7. Set ```DATA_STORAGE_CONNECTION_STRING``` to /home/rag.db. /home is a folder which is preserved and not removed after service restart.
+8. Set ```WEBSITES_ENABLE_APP_SERVICE_STORAGE```to ```true``` to save /home folder event after service restart.
+9. Run the application.
 
 ## License
-
 This project is licensed under the Apache License 2.0 - see the LICENSE file for details.
-
