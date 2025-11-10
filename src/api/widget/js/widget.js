@@ -190,9 +190,7 @@
                 <button class="rag-chat-close" id="ragChatClose">×</button>
             </div>
             <div class="rag-chat-messages" id="ragChatMessages">
-                <div class="rag-chat-message assistant">
-                    Hello! How can I help you today?
-                </div>
+                <div class="rag-chat-message assistant">Hello! How can I help you today?</div>
             </div>
             <div class="rag-chat-input-container">
                 <input 
