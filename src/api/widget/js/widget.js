@@ -146,6 +146,10 @@
             justify-content: center;
             z-index: 10000;
         }
+
+        .rag-chat-toggle:hover {
+            opacity: 0.7;
+        }
         
         .rag-chat-loading {
             display: inline-block;
