@@ -12,7 +12,6 @@
             right: 20px;
             width: 350px;
             height: 500px;
-            border: 1px solid #ddd;
             border-radius: 10px;
             background: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
