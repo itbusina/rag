@@ -63,6 +63,7 @@
             word-wrap: break-word;
             line-height: 1.4;
             font-size: 14px;
+            white-space: pre-wrap;
         }
         
         .rag-chat-message.user {
