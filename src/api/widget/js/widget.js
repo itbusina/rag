@@ -21,6 +21,21 @@
             z-index: 10000;
         }
         
+        /* Full screen on mobile and tablet */
+        @media screen and (max-width: 1024px) {
+            .rag-chat-widget {
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                height: 100%;
+                border-radius: 0;
+                max-width: 100%;
+                max-height: 100%;
+            }
+        }
+        
         .rag-chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -30,6 +45,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+        
+        @media screen and (max-width: 1024px) {
+            .rag-chat-header {
+                border-radius: 0;
+            }
         }
         
         .rag-chat-close {
