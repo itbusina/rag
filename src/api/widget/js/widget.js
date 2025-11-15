@@ -7,199 +7,199 @@
     // Create and inject styles
     const styles = `
         .rag-chat-widget {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 350px;
-            height: 500px;
-            border-radius: 10px;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            flex-direction: column;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            z-index: 10000;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 350px !important;
+            height: 500px !important;
+            border-radius: 10px !important;
+            background: white !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+            z-index: 10000 !important;
         }
         
         /* Full screen on mobile and tablet */
         @media screen and (max-width: 1024px) {
             .rag-chat-widget {
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                height: 100%;
-                border-radius: 0;
-                max-width: 100%;
-                max-height: 100%;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
             }
         }
         
         .rag-chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px 10px 0 0;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            padding: 15px !important;
+            border-radius: 10px 10px 0 0 !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
         }
         
         @media screen and (max-width: 1024px) {
             .rag-chat-header {
-                border-radius: 0;
+                border-radius: 0 !important;
             }
         }
         
         .rag-chat-close {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 0;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: none !important;
+            border: none !important;
+            color: white !important;
+            font-size: 20px !important;
+            cursor: pointer !important;
+            padding: 0 !important;
+            width: 24px !important;
+            height: 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
         }
         
         .rag-chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding: 15px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
         }
         
         .rag-chat-message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            word-wrap: break-word;
-            line-height: 1.4;
-            font-size: 14px;
-            white-space: pre-wrap;
+            max-width: 80% !important;
+            padding: 10px 14px !important;
+            border-radius: 18px !important;
+            word-wrap: break-word !important;
+            line-height: 1.4 !important;
+            font-size: 14px !important;
+            white-space: pre-wrap !important;
         }
         
         .rag-chat-message.user {
-            background: #667eea;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
+            background: #667eea !important;
+            color: white !important;
+            align-self: flex-end !important;
+            border-bottom-right-radius: 4px !important;
         }
         
         .rag-chat-message.assistant {
-            background: #f1f3f4;
-            color: #333;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
+            background: #f1f3f4 !important;
+            color: #333 !important;
+            align-self: flex-start !important;
+            border-bottom-left-radius: 4px !important;
         }
         
         .rag-chat-message.error {
-            background: #fee;
-            color: #c33;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
+            background: #fee !important;
+            color: #c33 !important;
+            align-self: flex-start !important;
+            border-bottom-left-radius: 4px !important;
         }
         
         .rag-chat-input-container {
-            padding: 15px;
-            border-top: 1px solid #eee;
-            display: flex;
-            gap: 10px;
+            padding: 15px !important;
+            border-top: 1px solid #eee !important;
+            display: flex !important;
+            gap: 10px !important;
         }
         
         .rag-chat-input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            outline: none;
-            font-size: 14px;
-            font-family: inherit;
+            flex: 1 !important;
+            padding: 10px !important;
+            border: 1px solid #ddd !important;
+            border-radius: 20px !important;
+            outline: none !important;
+            font-size: 14px !important;
+            font-family: inherit !important;
         }
         
         .rag-chat-input:focus {
-            border-color: #667eea;
+            border-color: #667eea !important;
         }
         
         .rag-chat-send {
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: background 0.2s;
+            background: #667eea !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 20px !important;
+            padding: 10px 20px !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 14px !important;
+            transition: background 0.2s !important;
         }
         
         .rag-chat-send:hover:not(:disabled) {
-            background: #5568d3;
+            background: #5568d3 !important;
         }
         
         .rag-chat-send:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+            background: #ccc !important;
+            cursor: not-allowed !important;
         }
         
         .rag-chat-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-size: 24px;
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            cursor: pointer !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            font-size: 24px !important;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
+            align-items: center !important;
+            justify-content: center !important;
+            z-index: 10000 !important;
         }
 
         .rag-chat-toggle:hover {
-            opacity: 0.7;
+            opacity: 0.7 !important;
         }
         
         .rag-chat-loading {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #667eea;
-            animation: rag-pulse 1.4s infinite ease-in-out both;
+            display: inline-block !important;
+            width: 8px !important;
+            height: 8px !important;
+            border-radius: 50% !important;
+            background: #667eea !important;
+            animation: rag-pulse 1.4s infinite ease-in-out both !important;
         }
         
         .rag-chat-loading:nth-child(1) {
-            animation-delay: -0.32s;
+            animation-delay: -0.32s !important;
         }
         
         .rag-chat-loading:nth-child(2) {
-            animation-delay: -0.16s;
+            animation-delay: -0.16s !important;
         }
         
         @keyframes rag-pulse {
             0%, 80%, 100% {
-                opacity: 0.3;
+                opacity: 0.3 !important;
             }
             40% {
-                opacity: 1;
+                opacity: 1 !important;
             }
         }
         
         .rag-chat-widget.hidden {
-            display: none;
+            display: none !important;
         }
     `;
     
