@@ -122,6 +122,7 @@
             outline: none !important;
             font-size: 14px !important;
             font-family: inherit !important;
+            color: black !important;
         }
         
         .rag-chat-input:focus {
