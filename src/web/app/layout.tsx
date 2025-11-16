@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: "Joyquery",
   description: "Manage your AI chat assistants",
   generator: "v0.app",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({
