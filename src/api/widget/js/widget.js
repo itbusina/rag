@@ -28,11 +28,9 @@
                 left: 0 !important;
                 right: 0 !important;
                 bottom: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
+                width: 100dvw !important;
+                height: 100dvh !important;
                 border-radius: 0 !important;
-                max-width: 100% !important;
-                max-height: 100% !important;
             }
         }
         
@@ -82,7 +80,7 @@
             border-radius: 18px !important;
             word-wrap: break-word !important;
             line-height: 1.4 !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
             white-space: pre-wrap !important;
         }
         
@@ -120,7 +118,7 @@
             border: 1px solid #ddd !important;
             border-radius: 20px !important;
             outline: none !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
             font-family: inherit !important;
             color: black !important;
         }
@@ -137,7 +135,7 @@
             padding: 10px 20px !important;
             cursor: pointer !important;
             font-weight: 600 !important;
-            font-size: 14px !important;
+            font-size: 16px !important;
             transition: background 0.2s !important;
         }
         
