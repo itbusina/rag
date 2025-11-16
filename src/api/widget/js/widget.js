@@ -202,6 +202,13 @@
         .rag-chat-widget.hidden {
             display: none !important;
         }
+        
+        /* Hide body content when chat is open on mobile/tablet */
+        @media screen and (max-width: 1024px) {
+            body.rag-chat-open > *:not(.rag-chat-container) {
+                display: none !important;
+            }
+        }
     `;
 
     const styleSheet = document.createElement('style');
@@ -243,6 +250,7 @@
 
     function initWidget() {
         const container = document.createElement('div');
+        container.className = 'rag-chat-container';
         container.innerHTML = widgetHTML;
         document.body.appendChild(container);
 
@@ -255,10 +263,25 @@
 
         let isOpen = false;
 
+        // Check if device is mobile or tablet
+        function isMobileOrTablet() {
+            return window.matchMedia('(max-width: 1024px)').matches;
+        }
+
         function toggleChat() {
             isOpen = !isOpen;
             widget.classList.toggle('hidden', !isOpen);
             toggle.style.display = isOpen ? 'none' : 'flex';
+            
+            // On mobile/tablet, hide/show body content
+            if (isMobileOrTablet()) {
+                if (isOpen) {
+                    document.body.classList.add('rag-chat-open');
+                } else {
+                    document.body.classList.remove('rag-chat-open');
+                }
+            }
+            
             if (isOpen) {
                 input.focus();
             }
