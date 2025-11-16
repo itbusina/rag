@@ -283,7 +283,7 @@
             }
             
             if (isOpen) {
-                input.focus();
+                //input.focus();
             }
         }
 
