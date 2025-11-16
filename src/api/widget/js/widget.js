@@ -1,9 +1,9 @@
-(function() {
+(function () {
     'use strict';
-    
+
     const ASSISTANT_ID = '{{ASSISTANT_ID}}';
     const API_BASE_URL = '{{API_BASE_URL}}';
-    
+
     // Create and inject styles
     const styles = `
         .rag-chat-widget {
@@ -37,7 +37,7 @@
         }
         
         .rag-chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: #0053a5 !important;
             color: white !important;
             padding: 15px !important;
             border-radius: 10px 10px 0 0 !important;
@@ -87,7 +87,7 @@
         }
         
         .rag-chat-message.user {
-            background: #667eea !important;
+            background: #0071df !important;
             color: white !important;
             align-self: flex-end !important;
             border-bottom-right-radius: 4px !important;
@@ -126,11 +126,11 @@
         }
         
         .rag-chat-input:focus {
-            border-color: #667eea !important;
+            border-color: #0071df !important;
         }
         
         .rag-chat-send {
-            background: #667eea !important;
+            background: #0071df !important;
             color: white !important;
             border: none !important;
             border-radius: 20px !important;
@@ -142,7 +142,7 @@
         }
         
         .rag-chat-send:hover:not(:disabled) {
-            background: #5568d3 !important;
+            background: #0053a5 !important;
         }
         
         .rag-chat-send:disabled {
@@ -152,12 +152,12 @@
         
         .rag-chat-toggle {
             position: fixed !important;
-            bottom: 20px !important;
-            right: 20px !important;
-            width: 60px !important;
-            height: 60px !important;
+            bottom: 25px !important;
+            right: 25px !important;
+            width: 50px !important;
+            height: 50px !important;
             border-radius: 50% !important;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            background: #0071df !important;
             color: white !important;
             border: none !important;
             cursor: pointer !important;
@@ -178,7 +178,7 @@
             width: 8px !important;
             height: 8px !important;
             border-radius: 50% !important;
-            background: #667eea !important;
+            background: #0071df !important;
             animation: rag-pulse 1.4s infinite ease-in-out both !important;
         }
         
@@ -203,11 +203,11 @@
             display: none !important;
         }
     `;
-    
+
     const styleSheet = document.createElement('style');
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
-    
+
     // Create chat widget HTML
     const widgetHTML = `
         <div class="rag-chat-widget hidden" id="ragChatWidget">
@@ -229,30 +229,32 @@
                 <button class="rag-chat-send" id="ragChatSend">Send</button>
             </div>
         </div>
-        <div class="rag-chat-toggle" id="ragChatToggle"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144ZM152,48h16V64a8,8,0,0,0,16,0V48h16a8,8,0,0,0,0-16H184V16a8,8,0,0,0-16,0V32H152a8,8,0,0,0,0,16Zm88,32h-8V72a8,8,0,0,0-16,0v8h-8a8,8,0,0,0,0,16h8v8a8,8,0,0,0,16,0V96h8a8,8,0,0,0,0-16Z"></path></svg></div>
+        <div class="rag-chat-toggle" id="ragChatToggle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffffff" viewBox="0 0 256 256"><path d="M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Z"></path></svg>
+        </div>
     `;
-    
+
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initWidget);
     } else {
         initWidget();
     }
-    
+
     function initWidget() {
         const container = document.createElement('div');
         container.innerHTML = widgetHTML;
         document.body.appendChild(container);
-        
+
         const widget = document.getElementById('ragChatWidget');
         const toggle = document.getElementById('ragChatToggle');
         const closeBtn = document.getElementById('ragChatClose');
         const input = document.getElementById('ragChatInput');
         const sendBtn = document.getElementById('ragChatSend');
         const messagesContainer = document.getElementById('ragChatMessages');
-        
+
         let isOpen = false;
-        
+
         function toggleChat() {
             isOpen = !isOpen;
             widget.classList.toggle('hidden', !isOpen);
@@ -261,10 +263,10 @@
                 input.focus();
             }
         }
-        
+
         toggle.addEventListener('click', toggleChat);
         closeBtn.addEventListener('click', toggleChat);
-        
+
         function addMessage(content, type = 'assistant') {
             const messageDiv = document.createElement('div');
             messageDiv.className = `rag-chat-message ${type}`;
@@ -272,7 +274,7 @@
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-        
+
         function addLoadingIndicator() {
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'rag-chat-message assistant';
@@ -281,25 +283,25 @@
             messagesContainer.appendChild(loadingDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-        
+
         function removeLoadingIndicator() {
             const loading = document.getElementById('ragChatLoading');
             if (loading) {
                 loading.remove();
             }
         }
-        
+
         async function sendMessage() {
             const query = input.value.trim();
             if (!query) return;
-            
+
             addMessage(query, 'user');
             input.value = '';
             input.disabled = true;
             sendBtn.disabled = true;
-            
+
             addLoadingIndicator();
-            
+
             try {
                 const response = await fetch(`${API_BASE_URL}/assistants/${ASSISTANT_ID}`, {
                     method: 'POST',
@@ -308,13 +310,13 @@
                     },
                     body: JSON.stringify(query)
                 });
-                
+
                 removeLoadingIndicator();
-                
+
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                
+
                 const data = await response.json();
                 addMessage(data.response || 'No response received', 'assistant');
             } catch (error) {
@@ -327,7 +329,7 @@
                 input.focus();
             }
         }
-        
+
         sendBtn.addEventListener('click', sendMessage);
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
