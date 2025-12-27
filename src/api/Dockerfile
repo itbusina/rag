@@ -42,6 +42,10 @@ RUN rm -rf ./api/wwwroot/*
 COPY --from=frontend-builder /app/web/out/ ./api/wwwroot/
 COPY /src/api/demo ./api/wwwroot/
 
+# make sure the css directory exists
+RUN mkdir -p ./api/wwwroot/css/
+COPY /src/api/widget/css/* ./api/wwwroot/css/
+
 # Build the API project
 RUN dotnet publish ./api/api.csproj -c Release -o /app/publish
 
