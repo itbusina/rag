@@ -422,3 +422,4 @@ FodyWeavers.xsd
 *.Development.json
 *.db*
 .next
+wwwroot
